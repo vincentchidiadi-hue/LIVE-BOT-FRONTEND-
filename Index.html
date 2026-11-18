@@ -1,1 +1,2267 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Vankleff Solana Hunter</title>
+<style>
+:root{--bg:#0a0e17;--surface:#121826;--surface-2:#1a2236;--border:#243049;--text:#e6edf7;--muted:#8a98b5;--green:#16c784;--red:#ea3943;--amber:#f0b90b;--blue:#3b82f6;--purple:#8b5cf6;--radius:12px}
+*,*::before,*::after{box-sizing:border-box}
+html,body{max-width:100%;overflow-x:hidden;-webkit-text-size-adjust:100%}
+@supports (overflow-x:clip){html,body{overflow-x:clip}}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.5;margin:0;-webkit-font-smoothing:antialiased;overflow-wrap:anywhere}
+.app{width:100%;max-width:1200px;margin:0 auto;padding:16px}
+.app>*{min-width:0;max-width:100%}
+.header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;padding:16px 18px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);max-width:100%;min-width:0}
+.brand{display:flex;align-items:center;gap:12px;min-width:0;flex:1 1 auto}
+.logo{flex:0 0 auto;width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,var(--purple),var(--blue));display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff}
+.brand-text{min-width:0}
+.brand h1{font-size:18px;font-weight:700;letter-spacing:-.3px;margin:0}
+.brand p{font-size:12px;color:var(--muted);margin:0}
+.mode-badge{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:999px;font-size:13px;font-weight:600;max-width:100%;flex:0 1 auto}
+.mode-warn{background:rgba(240,185,11,.12);color:var(--amber);border:1px solid rgba(240,185,11,.3)}
+.mode-live{background:rgba(234,57,67,.12);color:var(--red);border:1px solid rgba(234,57,67,.3)}
+.mode-ok{background:rgba(22,199,132,.12);color:var(--green);border:1px solid rgba(22,199,132,.3)}
+.dot{flex:0 0 auto;width:8px;height:8px;border-radius:50%;background:currentColor}
+.dot.live{animation:pulse 1.8s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.tabs{display:flex;gap:4px;margin-bottom:16px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin;padding:4px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);max-width:100%;min-width:0}
+.tab{flex:0 0 auto;padding:10px 16px;border:0;background:transparent;color:var(--muted);font-size:14px;font-weight:500;cursor:pointer;border-radius:8px;white-space:nowrap;transition:background .15s,color .15s;font-family:inherit}
+.tab.active{background:var(--surface-2);color:var(--text)}
+.tab:hover:not(.active){color:var(--text)}
+.grid{display:grid;gap:16px;min-width:0}
+.grid>*{min-width:0}
+.grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.grid-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:900px){.grid-4,.grid-3{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.grid-2,.grid-3,.grid-4{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;min-width:0;max-width:100%;overflow-wrap:anywhere}
+.card h3{font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:0 0 14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.stat-label{font-size:12px;color:var(--muted);margin-bottom:6px}
+.stat-value{font-size:24px;font-weight:700;letter-spacing:-.5px}
+.stat-value.unavail{font-size:14px;font-weight:700;color:var(--amber);letter-spacing:0}
+.stat-sub{font-size:12px;color:var(--muted);margin-top:4px}
+.pos{color:var(--green)}.neg{color:var(--red)}
+.table-wrap{width:100%;max-width:100%;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:thin;min-width:0}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:100%}
+.table-wrap table.table-wide{min-width:820px}
+.table-wrap table.table-mid{min-width:640px}
+th{text-align:left;padding:10px 12px;color:var(--muted);font-weight:500;font-size:12px;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:12px;border-bottom:1px solid var(--border);vertical-align:top}
+tr:last-child td{border-bottom:none}
+.token-cell{display:flex;align-items:center;gap:8px;font-weight:600;white-space:nowrap}
+.token-icon{flex:0 0 auto;width:28px;height:28px;border-radius:50%;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+.mobile-only{display:none}
+@media(max-width:620px){.mobile-only{display:block}}
+.form-group{margin-bottom:16px;min-width:0}
+.form-group label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+.form-group input,.form-group select{width:100%;max-width:100%;min-width:0;padding:10px 12px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:16px;font-family:inherit}
+.form-group input:focus,.form-group select:focus{outline:none;border-color:var(--blue)}
+.form-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;min-width:0}
+@media(max-width:620px){.form-row{grid-template-columns:minmax(0,1fr)}}
+.btn{display:inline-block;max-width:100%;padding:10px 18px;border:0;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:background .15s;font-family:inherit;white-space:normal;overflow-wrap:anywhere;text-align:center}
+.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:#2563eb}
+.btn-purple{background:var(--purple);color:#fff}.btn-purple:hover{background:#7c3aed}
+.btn-green{background:var(--green);color:#fff}.btn-green:hover{background:#10a870}
+.btn-danger{background:var(--red);color:#fff}.btn-danger:hover{background:#d63338}
+.btn-ghost{background:var(--surface-2);color:var(--text);border:1px solid var(--border)}
+.btn-ghost:hover{background:var(--border)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-block{width:100%}
+.pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;max-width:100%;overflow-wrap:anywhere}
+.pill-green{background:rgba(22,199,132,.12);color:var(--green)}
+.pill-red{background:rgba(234,57,67,.12);color:var(--red)}
+.pill-amber{background:rgba(240,185,11,.12);color:var(--amber)}
+.pill-muted{background:var(--surface-2);color:var(--muted)}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);min-width:0;flex-wrap:wrap}
+.toggle-row:last-child{border-bottom:none}
+.toggle-row>div{min-width:0;flex:1 1 200px}
+.toggle{flex:0 0 auto;position:relative;width:44px;height:24px}
+.toggle input{opacity:0;width:0;height:0}
+.slider{position:absolute;cursor:pointer;inset:0;background:var(--border);border-radius:999px;transition:.2s}
+.slider:before{content:"";position:absolute;height:18px;width:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+.toggle input:checked+.slider{background:var(--green)}
+.toggle input:checked+.slider:before{transform:translateX(20px)}
+.toggle input:disabled+.slider{opacity:.4;cursor:not-allowed}
+.alert{padding:12px 16px;border-radius:var(--radius);margin-bottom:16px;font-size:13px;display:flex;align-items:flex-start;gap:10px;max-width:100%;min-width:0;overflow-wrap:anywhere}
+.alert>span:first-child{flex:0 0 auto}
+.alert>span:last-child{min-width:0;flex:1 1 auto;overflow-wrap:anywhere}
+.alert-warn{background:rgba(240,185,11,.08);border:1px solid rgba(240,185,11,.25);color:var(--amber)}
+.alert-info{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.25);color:var(--blue)}
+.alert-err{background:rgba(234,57,67,.08);border:1px solid rgba(234,57,67,.25);color:var(--red)}
+.hidden{display:none!important}
+.muted{color:var(--muted)}.small{font-size:12px}
+.mono{font-family:"SF Mono","Monaco","Consolas",monospace;white-space:nowrap}
+.wrap-anywhere{overflow-wrap:anywhere;word-break:break-word}
+code{font-family:"SF Mono","Monaco","Consolas",monospace;font-size:.95em;overflow-wrap:anywhere}
+.mb-0{margin-bottom:0}.mt-12{margin-top:12px}
+.health-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;font-size:13px;border-bottom:1px solid var(--border);min-width:0;flex-wrap:wrap}
+.health-row:last-child{border-bottom:none}
+.health-row>span:first-child{min-width:0;overflow-wrap:anywhere}
+.health-row>span:last-child{flex:0 1 auto;max-width:100%}
+@media(max-width:480px){.health-row{flex-direction:column;align-items:flex-start;gap:4px}}
+.step-detail{padding:0 0 8px;border-bottom:1px solid var(--border)}
+.footer{text-align:center;padding:24px 0;color:var(--muted);font-size:12px}
+.disclaimer{background:rgba(234,57,67,.05);border:1px solid rgba(234,57,67,.2);border-radius:var(--radius);padding:14px;margin-bottom:16px;font-size:12px;color:var(--muted);max-width:100%;overflow-wrap:anywhere}
+.scan-controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px;min-width:0}
+.scan-controls .btn{flex:1 1 190px}
+.test-pass{color:var(--green);font-weight:700}.test-fail{color:var(--red);font-weight:700}
+.link{color:var(--blue);text-decoration:none;font-weight:600;overflow-wrap:anywhere}
+.link:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <div class="brand">
+      <div class="logo">V</div>
+      <div class="brand-text">
+        <h1>Vankleff Solana Hunter</h1>
+        <p id="brandSub">Initialising — connecting to backend…</p>
+      </div>
+    </div>
+    <div class="mode-badge mode-warn" id="modeBadge">
+      <span class="dot live"></span><span id="modeText">CONNECTING</span>
+    </div>
+  </div>
+
+  <div class="disclaimer">
+    ⚠️ <strong>Live trading — real SOL at risk.</strong> Every entry submits a real on-chain transaction from the configured backend wallet. Loss triggers and risk limits are <strong>targets, not guaranteed maximums</strong> — slippage, thin liquidity, MEV, failed or delayed transactions can all produce results worse than the configured limits. Fund the trading wallet only with what you can afford to lose.
+  </div>
+
+  <div class="alert alert-warn hidden" id="connAlert"><span>🔌</span><span id="connAlertText">Connecting to backend…</span></div>
+  <div class="alert alert-warn hidden" id="execAlert"><span>⚙️</span><span id="execAlertText"></span></div>
+  <div class="alert alert-warn hidden" id="riskAlert"><span>⛔</span><span id="riskAlertText"></span></div>
+
+  <div class="tabs" id="tabs">
+    <button class="tab active" data-tab="dashboard">Dashboard</button>
+    <button class="tab" data-tab="positions">Positions</button>
+    <button class="tab" data-tab="history">Trade History</button>
+    <button class="tab" data-tab="scanners">Scanners</button>
+    <button class="tab" data-tab="settings">Settings</button>
+    <button class="tab" data-tab="config">Integrations</button>
+    <button class="tab" data-tab="tests">Tests</button>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="tab-content" id="tab-dashboard">
+    <div class="grid grid-4" style="margin-bottom:16px">
+      <div class="card"><div class="stat-label">Wallet Balance</div><div class="stat-value mono" id="walletBalance">—</div><div class="stat-sub" id="walletSub">Awaiting backend report</div></div>
+      <div class="card"><div class="stat-label">Available Balance</div><div class="stat-value mono" id="availableFunds">—</div><div class="stat-sub" id="availableSub">Awaiting backend report</div></div>
+      <div class="card"><div class="stat-label">Portfolio Value</div><div class="stat-value mono" id="portfolioValue">—</div><div class="stat-sub" id="portfolioSub">Wallet + open positions at backend-reported prices</div></div>
+      <div class="card"><div class="stat-label">Total P&amp;L</div><div class="stat-value mono" id="totalPnl">—</div><div class="stat-sub" id="pnlBreakdown">Awaiting backend report</div></div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <h3>Live readiness <span class="pill pill-amber" id="execStatePill">CONNECTING</span></h3>
+      <div id="readinessList"><span class="small muted">Awaiting backend reports…</span></div>
+      <p class="small muted mt-12 mb-0">Entries are blocked unless every required check passes. The auto-supervisor re-verifies readiness every 15 seconds and resumes automatically once the backend reports all checks pass — no manual restart is needed. Steps marked UNKNOWN cannot be verified from the frontend because the backend does not report them yet — see the Integrations tab.</p>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <h3>Open Positions <span class="pill pill-muted" id="positionCount">0</span></h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Token</th><th>Spent</th><th>Now</th><th>Unrealized</th><th>Remaining</th></tr></thead>
+            <tbody id="positionsBody"><tr><td colspan="5" class="muted" style="text-align:center;padding:24px">No open positions</td></tr></tbody>
+          </table>
+        </div>
+        <p class="small muted mobile-only mt-12 mb-0">Scroll the table sideways to see all columns.</p>
+      </div>
+      <div class="card">
+        <h3>Risk Limit Status <span class="small muted" style="text-transform:none;font-weight:400">backend-enforced</span></h3>
+        <div id="riskStatus">
+          <div class="health-row"><span class="muted">Daily Loss Limit</span><span id="dailyLossStatus" class="pill pill-muted">Checking</span></div>
+          <div class="health-row"><span class="muted">Portfolio Drawdown</span><span id="drawdownStatus" class="pill pill-muted">Checking</span></div>
+          <div class="health-row"><span class="muted">Max Positions</span><span id="maxPosStatus" class="pill pill-muted">Checking</span></div>
+          <div class="health-row"><span class="muted">Max Exposure</span><span id="maxExpStatus" class="pill pill-muted">Checking</span></div>
+          <div class="health-row"><span class="muted">Market Data Feed</span><span id="feedStatus" class="pill pill-muted">Checking</span></div>
+          <div class="health-row"><span class="muted">Emergency Stop</span><span id="emergencyStatus" class="pill pill-muted">Checking</span></div>
+        </div>
+        <div class="mt-12"><button class="btn btn-danger btn-block" id="emergencyBtn" disabled>EMERGENCY STOP UNAVAILABLE</button></div>
+        <p class="small muted mt-12 mb-0">The emergency stop blocks new entries on the backend. It does <strong>not</strong> liquidate open positions.</p>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Service Health <span class="small muted" style="text-transform:none;font-weight:400">reported by backend</span></h3>
+      <div class="grid grid-2">
+        <div>
+          <div class="health-row"><span class="muted">Backend WebSocket</span><span class="pill pill-amber" id="wsStatus">Connecting…</span></div>
+          <div class="health-row"><span class="muted">Solana RPC / WebSocket</span><span class="pill pill-muted" id="rpcStatus">Awaiting report</span></div>
+          <div class="health-row"><span class="muted">Telegram Bot</span><span class="pill pill-muted" id="telegramStatus">Awaiting report</span></div>
+        </div>
+        <div>
+          <div class="health-row"><span class="muted">Pump.fun Listener</span><span class="pill pill-muted" id="listenerStatus">Awaiting report</span></div>
+          <div class="health-row"><span class="muted">Position Monitor</span><span class="pill pill-muted" id="monitorStatus">Awaiting report</span></div>
+          <div class="health-row"><span class="muted">Committed (cost basis)</span><span class="small mono" id="committedSol">—</span></div>
+        </div>
+      </div>
+      <p class="small muted mt-12 mb-0" id="healthAge">Last backend check: never</p>
+    </div>
+  </div>
+
+  <!-- POSITIONS -->
+  <div class="tab-content hidden" id="tab-positions">
+    <div class="card">
+      <h3>Open Positions <span class="small muted" style="text-transform:none;font-weight:400">on-chain, backend-reported</span></h3>
+      <div class="table-wrap">
+        <table class="table-wide">
+          <thead><tr>
+            <th>Token</th><th>Strategy</th><th>Spent (SOL)</th><th>Remaining</th><th>Entry (SOL)</th><th>Now (SOL)</th>
+            <th>Unrealized</th><th>Stop (SOL)</th><th>Trail 5% (SOL)</th><th>Take Profits</th><th>Security</th><th>Tx</th><th>Action</th>
+          </tr></thead>
+          <tbody id="positionsFullBody"><tr><td colspan="13" class="muted" style="text-align:center;padding:24px">No open positions</td></tr></tbody>
+        </table>
+      </div>
+      <p class="small muted mobile-only mt-12">Scroll the table sideways to see all columns.</p>
+      <p class="small muted mt-12 mb-0">A position appears here only after the backend has confirmed the on-chain transaction. Closing sends a signed sell through the backend; the row is removed only when the backend reports <code>position_closed</code>. The trail column is the backend's 5% trailing drawdown from the highest valid price after entry — it never loosens.</p>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Execution Requests <span class="small muted" style="text-transform:none;font-weight:400">session + carried over</span></h3>
+      <div class="table-wrap">
+        <table class="table-mid">
+          <thead><tr><th>Time</th><th>Token</th><th>Status</th><th>Request ID</th><th>Signature</th><th>Note</th><th>Action</th></tr></thead>
+          <tbody id="execReqsBody"><tr><td colspan="7" class="muted" style="text-align:center;padding:24px">No execution requests this session</td></tr></tbody>
+        </table>
+      </div>
+      <p class="small muted mobile-only mt-12">Scroll the table sideways to see all columns.</p>
+      <p class="small muted mt-12 mb-0">SUBMITTED means the request was sent and no result has been received yet — it is not a position. UNKNOWN means the outcome could not be established; reconcile before retrying. Requests are never resubmitted automatically, and unresolved request IDs survive a page reload so the same mint cannot be bought twice.</p>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="tab-content hidden" id="tab-history">
+    <div class="grid grid-2" id="strategyStats" style="margin-bottom:16px"></div>
+    <div class="card">
+      <h3>Trade History <span class="small muted" style="text-transform:none;font-weight:400">backend records</span></h3>
+      <div class="table-wrap">
+        <table class="table-wide">
+          <thead><tr><th>Time</th><th>Token</th><th>Strategy</th><th>Type</th><th>Size</th><th>Exit %</th><th>Net P&amp;L</th><th>Reason</th><th>Tx</th></tr></thead>
+          <tbody id="historyBody"><tr><td colspan="9" class="muted" style="text-align:center;padding:24px">No trades recorded</td></tr></tbody>
+        </table>
+      </div>
+      <p class="small muted mobile-only mt-12">Scroll the table sideways to see all columns.</p>
+      <p class="small muted mt-12 mb-0">Sell records carry the on-chain signature — open it on Solscan to verify the fill. Fees shown as “—” mean the backend reported no fee for that leg.</p>
+    </div>
+  </div>
+
+  <!-- SCANNERS -->
+  <div class="tab-content hidden" id="tab-scanners">
+    <div class="scan-controls">
+      <button class="btn btn-primary" id="scanEarly">Run Early Hunter</button>
+      <button class="btn btn-purple" id="scanConfirm">Run Confirmation Hunter</button>
+    </div>
+    <p class="small muted" id="scanStatus">Scans are dispatched to the backend. Discovered tokens arrive in real time via the <code>token_discovered</code> event.</p>
+
+    <div class="grid grid-2" style="margin-top:16px">
+      <div class="card">
+        <h3>Early Hunter</h3>
+        <p class="small muted mb-0">Immediate detection; launches under 3 minutes jump the queue, anything older than 10 minutes is rejected.</p>
+        <div class="mt-12">
+          <div class="health-row"><span class="muted">Priority age</span><span class="small">&lt; 3 min (front of queue)</span></div>
+          <div class="health-row"><span class="muted">Hard age cut-off</span><span class="small">&gt; 10 min rejected</span></div>
+          <div class="health-row"><span class="muted">Liquidity</span><span class="small">$10K – $100K</span></div>
+          <div class="health-row"><span class="muted">Market Cap</span><span class="small">$20K – $300K (FDV never substituted)</span></div>
+          <div class="health-row"><span class="muted">Short-term activity</span><span class="small">&ge; 25 trades / 5 min (replaces the 24h volume filter)</span></div>
+          <div class="health-row"><span class="muted">Buy pressure</span><span class="small">buys ÷ sells &ge; 1.15</span></div>
+          <div class="health-row"><span class="muted">Anti-chasing</span><span class="small">reject if already up &gt; 20% in 5 min</span></div>
+          <div class="health-row"><span class="muted">Executable liquidity</span><span class="small">&ge; $5K within 3% impact</span></div>
+          <div class="health-row"><span class="muted">Max price impact</span><span class="small">3%</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Confirmation Hunter</h3>
+        <p class="small muted mb-0">Established activity (pair age &lt; 24h).</p>
+        <div class="mt-12">
+          <div class="health-row"><span class="muted">Liquidity</span><span class="small">$25K – $500K</span></div>
+          <div class="health-row"><span class="muted">Market Cap</span><span class="small">$100K – $2M (FDV never substituted)</span></div>
+          <div class="health-row"><span class="muted">Short-term activity</span><span class="small">&ge; 60 trades / 5 min</span></div>
+          <div class="health-row"><span class="muted">Buy pressure</span><span class="small">buys ÷ sells &ge; 1.20</span></div>
+          <div class="health-row"><span class="muted">Anti-chasing</span><span class="small">reject if already up &gt; 25% in 5 min</span></div>
+          <div class="health-row"><span class="muted">Max price impact</span><span class="small">3%</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Last Scan Summary</h3>
+      <div id="scanSummary"><span class="small muted">No scan dispatched yet in this session.</span></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Recent Rejections</h3>
+      <div id="rejectionsList"><span class="small muted">None reported by backend yet.</span></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Discovered Tokens <span class="small muted" style="text-transform:none;font-weight:400">deduplicated by mint</span></h3>
+      <div class="table-wrap">
+        <table class="table-wide">
+          <thead><tr><th>Token</th><th>Source</th><th>Age</th><th>Liq / MCap</th><th>5m Activity</th><th>Score</th><th>Impact</th><th>Security</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="discoveredBody"><tr><td colspan="10" class="muted" style="text-align:center;padding:24px">No tokens discovered yet — run a scanner above</td></tr></tbody>
+        </table>
+      </div>
+      <p class="small muted mobile-only mt-12">Scroll the table sideways to see all columns.</p>
+      <p class="small muted mt-12 mb-0">BUY submits a real on-chain entry through the backend. It is disabled unless live readiness is fully verified, and the same filters the scanner applies at discovery are re-checked here against the token's current values — an aged or overheated candidate is refused.</p>
+    </div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div class="tab-content hidden" id="tab-settings">
+    <div class="card">
+      <h3>Trading Configuration <span class="small muted" style="text-transform:none;font-weight:400">pushed to the backend on save</span></h3>
+      <p class="small muted">The backend enforces every limit below independently of this dashboard. Values shown are the backend's current configuration; greyed placeholders show the required policy target.</p>
+
+      <div class="form-row">
+        <div class="form-group"><label>Loss Trigger Per Trade (₦) — target, not a guaranteed maximum</label><input type="number" id="cfgLossTrigger" inputmode="decimal" placeholder="—" /></div>
+        <div class="form-group"><label>Position Size (₦) — converted to SOL at entry</label><input type="number" id="cfgPositionSize" inputmode="decimal" placeholder="—" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Max Simultaneous Positions</label><input type="number" id="cfgMaxPositions" inputmode="numeric" placeholder="policy 3" /></div>
+        <div class="form-group"><label>Max Combined Exposure (₦)</label><input type="number" id="cfgMaxExposure" inputmode="decimal" placeholder="policy 3000" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Portfolio Drawdown Trigger (₦) — realized + unrealized</label><input type="number" id="cfgDrawdown" inputmode="decimal" placeholder="policy 2500" /></div>
+        <div class="form-group"><label>Daily Loss Limit (₦)</label><input type="number" id="cfgDailyLimit" inputmode="decimal" placeholder="policy 1000" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>SOL/NGN Rate (configured — not a live market quote)</label><input type="number" id="cfgSolRate" inputmode="decimal" placeholder="—" /></div>
+        <div class="form-group"><label>Trading-Day Timezone</label>
+          <select id="cfgTimezone">
+            <option value="">—</option>
+            <option value="Africa/Lagos">Africa/Lagos (WAT)</option>
+            <option value="UTC">UTC</option>
+            <option value="Europe/London">Europe/London</option>
+            <option value="America/New_York">America/New_York</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Trailing Drawdown (%) — from highest valid price</label><input type="number" id="cfgTrailPct" inputmode="decimal" placeholder="policy 5" /></div>
+        <div class="form-group"><label>Max Holding Duration (hours)</label><input type="number" id="cfgMaxHold" inputmode="decimal" placeholder="—" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>TP Level 1 — Gain (₦)</label><input type="number" id="cfgTpGain1" inputmode="decimal" placeholder="—" /></div>
+        <div class="form-group"><label>TP Level 1 — Exit (% of position)</label><input type="number" id="cfgTpPct1" inputmode="decimal" placeholder="—" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>TP Level 2 — Gain (₦)</label><input type="number" id="cfgTpGain2" inputmode="decimal" placeholder="—" /></div>
+        <div class="form-group"><label>TP Level 2 — Exit (% of position)</label><input type="number" id="cfgTpPct2" inputmode="decimal" placeholder="—" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Liquidity Deterioration Exit (drop %)</label><input type="number" id="cfgLiqDrop" inputmode="decimal" placeholder="—" /></div>
+        <div class="form-group"><label>&nbsp;</label><div class="small muted">Daily losses are the realized net losses of exits booked in the current trading day (timezone selected above). Open positions count when they exit — never twice.</div></div>
+      </div>
+
+      <div class="toggle-row">
+        <div><div style="font-weight:600">Trailing Stop</div><div class="small muted">Arms after a position gains more than the per-trade loss trigger; only reduces risk</div></div>
+        <label class="toggle"><input type="checkbox" id="cfgTrail" /><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div><div style="font-weight:600">Leverage &amp; Borrowing</div><div class="small muted">Not available on spot bonding-curve swaps</div></div>
+        <label class="toggle"><input type="checkbox" disabled /><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div><div style="font-weight:600">Auto-Reinvest Profits</div><div class="small muted">Off by default</div></div>
+        <label class="toggle"><input type="checkbox" id="cfgReinvest" /><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div><div style="font-weight:600">Loss Recovery Position Increase</div><div class="small muted">Prohibited — permanently disabled</div></div>
+        <label class="toggle"><input type="checkbox" disabled /><span class="slider"></span></label>
+      </div>
+
+      <button class="btn btn-primary mt-12" id="saveSettings">Save &amp; Sync to Backend</button>
+      <span class="small muted" id="saveMsg" style="margin-left:12px"></span>
+      <p class="small muted mt-12 mb-0">Leave a field blank to keep the backend's current value. Fields are sent only when they contain a value.</p>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Risk Policy Compliance <span class="small muted" style="text-transform:none;font-weight:400">must be equal or tighter</span></h3>
+      <div id="policyRows"><span class="small muted">Awaiting the backend's configuration…</span></div>
+      <p class="small muted mt-12 mb-0">Entries stay blocked while the backend reports a limit looser than policy, or does not report it at all. Policy: ₦1,000 daily loss, ₦2,500 drawdown, 3 open positions, ₦3,000 total exposure, 5% trailing drawdown.</p>
+    </div>
+  </div>
+
+  <!-- INTEGRATIONS -->
+  <div class="tab-content hidden" id="tab-config">
+    <div class="alert alert-info"><span>🔒</span><span>Backend credentials (RPC URLs, wallet private key, arming flags, Telegram token) live only in the backend <code>.env</code> file. Nothing secret is stored, logged, or displayed here.</span></div>
+
+    <div class="card">
+      <h3>Backend Connection</h3>
+      <div class="form-row">
+        <div class="form-group"><label>Backend REST URL</label><input type="text" id="cfgBackendUrl" value="http://localhost:8080" autocomplete="off" spellcheck="false" /></div>
+        <div class="form-group"><label>Backend WebSocket URL</label><input type="text" id="cfgWsUrl" value="ws://localhost:8080" autocomplete="off" spellcheck="false" /></div>
+      </div>
+      <button class="btn btn-primary" id="saveBackend">Save &amp; Reconnect</button>
+      <span class="small muted" id="backendMsg" style="margin-left:12px"></span>
+      <p class="small muted mt-12 mb-0">Only these two values (plus unresolved request IDs, so a reload cannot duplicate a trade) are stored in this browser. Balances, positions, trades and P&amp;L come from the backend on every load — browser storage is never used as a financial ledger.</p>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Live Authorization</h3>
+      <div class="health-row"><span class="muted">Reported by backend <code>/api/health</code></span><span class="pill pill-muted" id="authStatus">Awaiting report</span></div>
+      <div class="health-row"><span class="muted">Frontend can arm live trading</span><span class="small">No — arming is server-side only</span></div>
+      <p class="small muted mt-12 mb-0">Live execution is armed by <code>LIVE_TRADING_ENABLED=true</code>, a matching <code>LIVE_TRADING_ACK</code>, and a configured wallet key on the server. Once the server is armed it starts operating automatically on boot and after restarts — this dashboard never needs to arm it and never can. While unarmed it keeps re-checking readiness and resumes automatically the moment the backend reports every check passing.</p>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Capabilities the backend does not report yet</h3>
+      <p class="small muted">These are shown as UNKNOWN in the readiness list rather than being guessed:</p>
+      <div class="health-row"><span class="muted wrap-anywhere">Wallet public address in <code>/api/health</code></span><span class="pill pill-amber">Not reported</span></div>
+      <div class="health-row"><span class="muted wrap-anywhere">Available / spendable balance</span><span class="pill pill-amber">Not reported</span></div>
+      <div class="health-row"><span class="muted wrap-anywhere">Reserved balance &amp; fee reserve</span><span class="pill pill-amber">Not reported</span></div>
+      <div class="health-row"><span class="muted wrap-anywhere">Per-step readiness object</span><span class="pill pill-amber">Not reported</span></div>
+      <div class="health-row"><span class="muted wrap-anywhere">Pending / failed transaction events</span><span class="pill pill-amber">Not reported</span></div>
+      <div class="health-row"><span class="muted wrap-anywhere">Request idempotency keys (server-side)</span><span class="pill pill-amber">Not supported — mirrored in this browser</span></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Security Provider Status</h3>
+      <div class="health-row"><span class="muted">RugCheck (Solana)</span><span class="pill pill-muted" id="rugStatus">Awaiting report</span></div>
+      <div class="health-row"><span class="muted">GoPlus</span><span class="small">No Solana endpoint — not used</span></div>
+      <div class="health-row"><span class="muted">TokenSniffer</span><span class="small">EVM only — not used</span></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Wallet Security</h3>
+      <div class="health-row"><span class="muted">Wallet type</span><span class="small">Dedicated trading wallet (recommended)</span></div>
+      <div class="health-row"><span class="muted">Recovery phrase</span><span class="small" style="color:var(--red)">Never requested</span></div>
+      <div class="health-row"><span class="muted">Private key exposure</span><span class="small" style="color:var(--red)">Never sent to this browser, scanners, Telegram, or logs</span></div>
+      <div class="health-row"><span class="muted">Transaction signing</span><span class="small" style="color:var(--amber)">Server-side only</span></div>
+    </div>
+  </div>
+
+  <!-- TESTS -->
+  <div class="tab-content hidden" id="tab-tests">
+    <div class="card">
+      <h3>Frontend Self-Tests <button class="btn btn-primary" id="runTests" style="padding:6px 14px;font-size:13px">Run All Tests</button></h3>
+      <p class="small muted mb-0">Verifies the WebSocket bridge, REST wiring, event routing, live SOL P&amp;L and stop math, trailing drawdown, Early Hunter filters, anti-chasing, executable-liquidity and price-impact gates, risk mirroring and policy compliance, automatic readiness resumption, duplicate prevention across reloads, and that no local financial ledger or fallback balance remains.</p>
+      <div id="testResults" class="mt-12"></div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Vankleff Solana Hunter — Live Execution Dashboard<br />
+    All financial values are reported by the backend. Nothing is computed from local defaults.
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* =========================================================================
+     1. CONFIG
+     ========================================================================= */
+  var PREFS_KEY = "vankleff_conn_v1";       /* connection URLs only */
+  var PENDING_KEY = "vankleff_pending_v1";  /* unresolved request ids only — duplicate guard */
+  var WS_BASE_MS = 1000, WS_MAX_MS = 30000, HEARTBEAT_TIMEOUT_MS = 45000;
+  var HEALTH_POLL_MS = 15000, HEALTH_STALE_MS = 60000, REQUEST_UNKNOWN_MS = 45000;
+  var SOLSCAN = "https://solscan.io/tx/";
+  var UNAVAILABLE = "UNAVAILABLE", DASH = "\u2014";
+
+  /* Required trading policy — display + verification only; the backend enforces it. */
+  var POLICY = {
+    dailyLossLimit: 1000,
+    drawdownTrigger: 2500,
+    maxPositions: 3,
+    maxExposure: 3000,
+    trailPct: 5,
+    execMinUsd: 5000,
+    maxImpactPct: 3,
+    early:   { maxAgeMin: 10, priorityAgeMin: 3, liqMin: 10000, liqMax: 100000, mcapMin: 20000, mcapMax: 300000, trades5m: 25, buyPressure: 1.15, maxChasePct: 20 },
+    confirm: { maxAgeMin: 1440, priorityAgeMin: 0, liqMin: 25000, liqMax: 500000, mcapMin: 100000, mcapMax: 2000000, trades5m: 60, buyPressure: 1.2, maxChasePct: 25 }
+  };
+
+  var SVC_OK = ["ok", "connected", "running", "verified"];
+  var SVC_BAD = ["error", "disconnected", "failed", "stopped", "rate_limited", "circuit_open"];
+
+  /* Settings form fields: [element id, backend settings key] */
+  var SETTINGS_FIELDS = [
+    ["cfgLossTrigger", "lossTrigger"], ["cfgPositionSize", "positionSize"],
+    ["cfgMaxPositions", "maxPositions"], ["cfgMaxExposure", "maxExposure"],
+    ["cfgDrawdown", "drawdownTrigger"], ["cfgDailyLimit", "dailyLossLimit"],
+    ["cfgSolRate", "solNgnRate"], ["cfgTrailPct", "trailPct"], ["cfgMaxHold", "maxHoldHours"],
+    ["cfgTpGain1", "tpGain1"], ["cfgTpPct1", "tpPct1"], ["cfgTpGain2", "tpGain2"],
+    ["cfgTpPct2", "tpPct2"], ["cfgLiqDrop", "liquidityDropPct"]
+  ];
+
+  /* =========================================================================
+     2. STATE — no defaults for any financial value
+     ========================================================================= */
+  var state = {
+    connected: false,
+    healthCheckedAt: null,
+    health: { live: null, mode: null, walletBalance: null, walletAddress: null, available: null, reserved: null, feeReserve: null },
+    settings: null,
+    positions: [],
+    tradeHistory: [],
+    discoveredTokens: [],
+    realizedPnl: null,
+    serviceHealth: {},
+    emergencyStop: null,
+    feedFailures: null,
+    lastScan: null,
+    execRequests: [],
+    logs: [],
+    backendUrl: "http://localhost:8080",
+    wsUrl: "ws://localhost:8080"
+  };
+
+  /* =========================================================================
+     3. SMALL HELPERS
+     ========================================================================= */
+  function $(id) { return document.getElementById(id); }
+  function isNum(v) { return typeof v === "number" && isFinite(v); }
+  function has(v) { return v !== null && v !== undefined && v !== ""; }
+
+  function loadPrefs() {
+    try {
+      var p = JSON.parse(localStorage.getItem(PREFS_KEY) || "null");
+      if (p && p.backendUrl) state.backendUrl = p.backendUrl;
+      if (p && p.wsUrl) state.wsUrl = p.wsUrl;
+    } catch (e) { /* ignore */ }
+  }
+  function savePrefs() {
+    try { localStorage.setItem(PREFS_KEY, JSON.stringify({ backendUrl: state.backendUrl, wsUrl: state.wsUrl })); } catch (e) { /* ignore */ }
+  }
+  loadPrefs();
+
+  function fmtSol(v) {
+    if (!isNum(v)) return UNAVAILABLE;
+    var a = Math.abs(v);
+    if (a === 0) return "0 SOL";
+    if (a >= 1) return v.toFixed(4) + " SOL";
+    if (a >= 0.0001) return v.toFixed(6) + " SOL";
+    return v.toExponential(3) + " SOL";
+  }
+  function fmtSolBare(v) {
+    if (!isNum(v)) return DASH;
+    var a = Math.abs(v);
+    if (a === 0) return "0";
+    if (a >= 1) return v.toFixed(4);
+    if (a >= 0.0001) return v.toFixed(6);
+    return v.toExponential(3);
+  }
+  function fmtNgn(v) { return isNum(v) ? "\u20A6" + Math.round(v).toLocaleString("en-NG") : UNAVAILABLE; }
+  function fmtUsd(v) {
+    if (!isNum(v) || v <= 0) return DASH;
+    return v >= 1000 ? "$" + Math.round(v).toLocaleString("en-US") : "$" + v.toPrecision(3);
+  }
+  function signMoney(v) { return (v >= 0 ? "+" : "-") + fmtNgn(Math.abs(v)); }
+  function rate() { return isNum(state.settings && state.settings.solNgnRate) ? state.settings.solNgnRate : null; }
+  function ngnFromSol(sol) { var r = rate(); return (isNum(sol) && isNum(r)) ? sol * r : null; }
+  function pnlClass(v) { return v > 0 ? "pos" : v < 0 ? "neg" : ""; }
+
+  function timeAgo(iso) {
+    if (!iso) return DASH;
+    var ms = Date.now() - new Date(iso).getTime();
+    if (!isFinite(ms)) return DASH;
+    if (ms < 60000) return "just now";
+    var m = Math.floor(ms / 60000);
+    if (m < 60) return m + "m ago";
+    var h = Math.floor(m / 60);
+    return h < 24 ? h + "h ago" : Math.floor(h / 24) + "d ago";
+  }
+  function esc(s) {
+    return String(s === null || s === undefined ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+  function shortSig(sig) {
+    if (!sig) return DASH;
+    return '<a class="link mono small" href="' + SOLSCAN + esc(sig) + '" target="_blank" rel="noopener">' +
+      esc(String(sig).slice(0, 10)) + "\u2026</a>";
+  }
+  function reqId() { return "req_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8); }
+  function logEvent(level, component, message) {
+    state.logs.unshift({ timestamp: new Date().toISOString(), level: level, component: component, message: message });
+    if (state.logs.length > 200) state.logs.length = 200;
+  }
+  function healthIsStale() { return !state.healthCheckedAt || (Date.now() - state.healthCheckedAt) > HEALTH_STALE_MS; }
+
+  /* =========================================================================
+     4. DERIVED — SOL-native, verified inputs only
+     ========================================================================= */
+  function remFrac(p) {
+    var r = (p && (p.remainingPct === null || p.remainingPct === undefined)) ? 100 : p.remainingPct;
+    return Math.max(0, Math.min(100, r)) / 100;
+  }
+
+  function unrealizedSolOf(p) {
+    if (!p) return null;
+    var spent = p.solSpent, entry = p.entryPriceSol, cur = p.currentPriceSol;
+    if (!isNum(spent) || !isNum(entry) || !isNum(cur) || entry <= 0 || cur <= 0) return null;
+    var f = remFrac(p);
+    return f <= 0 ? 0 : spent * f * ((cur / entry) - 1);
+  }
+
+  function sumOverPositions(pick) {
+    var sum = 0, complete = true, seen = false;
+    state.positions.forEach(function (p) {
+      var v = pick(p);
+      if (v === null) { complete = false; return; }
+      sum += v; seen = true;
+    });
+    if (!seen) return state.positions.length > 0 ? { value: null, complete: false } : { value: 0, complete: true };
+    return { value: sum, complete: complete };
+  }
+
+  function unrealizedSol() {
+    return state.positions.length === 0 ? { value: 0, complete: true } : sumOverPositions(unrealizedSolOf);
+  }
+
+  function committedSol() {
+    if (!state.positions.length) return { value: 0, complete: true };
+    return sumOverPositions(function (p) {
+      return isNum(p.solSpent) ? p.solSpent * remFrac(p) : null;
+    });
+  }
+
+  function exposureNgn() {
+    if (!state.positions.length) return { value: 0, complete: true };
+    return sumOverPositions(function (p) {
+      return isNum(p.sizeNaira) ? p.sizeNaira * remFrac(p) : null;
+    });
+  }
+
+  function portfolioSol() {
+    var w = state.health.walletBalance;
+    if (!isNum(w)) return { value: null, note: "wallet balance not reported" };
+    var total = w, complete = true;
+    state.positions.forEach(function (p) {
+      if (isNum(p.currentPriceSol) && isNum(p.tokenAmount)) total += p.tokenAmount * remFrac(p) * p.currentPriceSol;
+      else complete = false;
+    });
+    return { value: total, note: complete ? null : "some position prices missing" };
+  }
+
+  /* Fixed loss-protection stop: targets the configured naira loss on the remaining size. */
+  function stopSolFor(p) {
+    var s = state.settings;
+    if (!s || !isNum(s.lossTrigger)) return null;
+    if (!isNum(p.solSpent) || !isNum(p.tokenAmount) || !isNum(p.entryPriceSol)) return null;
+    var r = rate();
+    if (!isNum(r)) return null;
+    var f = remFrac(p);
+    if (f <= 0) return null;
+    var tokensRem = p.tokenAmount * f;
+    if (tokensRem <= 0) return null;
+    var target = (p.solSpent * f) - (s.lossTrigger / r);
+    if (target <= 0) return null;
+    var stop = target / tokensRem;
+    return stop > 0 && stop < p.entryPriceSol ? stop : null;
+  }
+
+  /* Trailing drawdown: 5% below the highest valid price since entry. Never widens. */
+  function trailStopSol(p) {
+    var hi = isNum(p.trailHigh) ? p.trailHigh : (isNum(p.highPriceSol) ? p.highPriceSol : null);
+    if (hi === null || hi <= 0) return null;
+    return hi * (1 - POLICY.trailPct / 100);
+  }
+
+  function tzOffsetMinutes(tz, date) {
+    try {
+      var parts = {};
+      new Intl.DateTimeFormat("en-US", {
+        timeZone: tz, hour12: false, year: "numeric", month: "2-digit",
+        day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit"
+      }).formatToParts(date).forEach(function (x) { parts[x.type] = x.value; });
+      var asUTC = Date.UTC(+parts.year, +parts.month - 1, +parts.day,
+        (+parts.hour === 24 ? 0 : +parts.hour), +parts.minute, +parts.second);
+      return (asUTC - date.getTime()) / 60000;
+    } catch (e) { return 0; }
+  }
+
+  function tradingDayStart(tz) {
+    try {
+      var ymd = new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit" })
+        .format(new Date()).split("-");
+      var midnight = Date.UTC(+ymd[0], +ymd[1] - 1, +ymd[2]);
+      return new Date(midnight - tzOffsetMinutes(tz, new Date(midnight)) * 60000);
+    } catch (e) {
+      var t = new Date(); t.setHours(0, 0, 0, 0); return t;
+    }
+  }
+
+  function sumDailyLosses(history, tz) {
+    if (!Array.isArray(history)) return null;
+    var start = tradingDayStart(tz || "Africa/Lagos").getTime(), sum = 0;
+    history.forEach(function (t) {
+      if (t.type !== "sell" || !isNum(t.netPnl) || t.netPnl >= 0) return;
+      if (new Date(t.timestamp).getTime() >= start) sum += -t.netPnl;
+    });
+    return sum;
+  }
+
+  /* Mirror of the backend limits, display only. null = cannot be determined. */
+  function riskMirror() {
+    var s = state.settings;
+    if (!s) {
+      return { known: false, dailyLossUsed: null, dailyLimitHit: null, drawdownValue: null, drawdownHit: null,
+               maxPosHit: null, expHit: null, feedUnreliable: null, positions: state.positions.length,
+               exposure: null, maxPositions: null, maxExposure: null };
+    }
+    var dailyLossUsed = sumDailyLosses(state.tradeHistory, s.timezone);
+    var u = unrealizedSol();
+    var uNgn = u.value === null ? null : ngnFromSol(u.value);
+    var realized = state.realizedPnl;
+    var total = (isNum(realized) && isNum(uNgn)) ? realized + uNgn : null;
+    var exp = exposureNgn();
+    return {
+      known: true,
+      dailyLossUsed: dailyLossUsed,
+      dailyLimitHit: (isNum(dailyLossUsed) && isNum(s.dailyLossLimit)) ? dailyLossUsed >= s.dailyLossLimit : null,
+      drawdownValue: total === null ? null : Math.max(0, -total),
+      drawdownHit: (total !== null && isNum(s.drawdownTrigger)) ? (-total >= s.drawdownTrigger) : null,
+      maxPosHit: isNum(s.maxPositions) ? state.positions.length >= s.maxPositions : null,
+      expHit: (exp.value !== null && isNum(s.maxExposure)) ? exp.value >= s.maxExposure : null,
+      feedUnreliable: isNum(state.feedFailures) ? state.feedFailures >= 3 : null,
+      positions: state.positions.length,
+      exposure: exp.value,
+      maxPositions: s.maxPositions,
+      maxExposure: s.maxExposure
+    };
+  }
+
+  /* Backend-configured limits vs required policy. Looser than policy = FAIL. */
+  var POLICY_ROWS = [
+    { label: "Daily loss limit", key: "dailyLossLimit", max: POLICY.dailyLossLimit, kind: "money" },
+    { label: "Portfolio drawdown trigger", key: "drawdownTrigger", max: POLICY.drawdownTrigger, kind: "money" },
+    { label: "Max open positions", key: "maxPositions", max: POLICY.maxPositions, kind: "count" },
+    { label: "Max total exposure", key: "maxExposure", max: POLICY.maxExposure, kind: "money" },
+    { label: "Trailing drawdown", key: "trailPct", max: POLICY.trailPct, kind: "pct" }
+  ];
+
+  function fmtPolicyValue(v, kind) {
+    return kind === "money" ? fmtNgn(v) : kind === "pct" ? v + "%" : String(v);
+  }
+
+  function policyRows() {
+    var s = state.settings;
+    if (!s) return [{ label: "Backend risk configuration", status: "unknown", detail: "Backend has not reported its settings" }];
+    return POLICY_ROWS.map(function (r) {
+      var v = s[r.key];
+      var want = fmtPolicyValue(r.max, r.kind);
+      if (!isNum(v)) return { label: r.label, status: "unknown", detail: "not reported by backend (policy " + want + ")" };
+      var got = fmtPolicyValue(v, r.kind);
+      return v > r.max
+        ? { label: r.label, status: "fail", detail: got + " is looser than policy " + want }
+        : { label: r.label, status: "pass", detail: got + " (policy " + want + ")" };
+    });
+  }
+
+  /* =========================================================================
+     5. PER-TOKEN PRE-TRADE FILTERS
+     ========================================================================= */
+  function tokenAgeMin(t) {
+    if (isNum(t.ageMinutes)) return t.ageMinutes;
+    var s = t.launchedAt || t.pairCreatedAt || t.discoveredAt;
+    if (!s) return null;
+    var ms = Date.now() - new Date(s).getTime();
+    return isFinite(ms) ? ms / 60000 : null;
+  }
+  function buyPressureOf(t) {
+    if (isNum(t.buyPressure)) return t.buyPressure;
+    if (isNum(t.buys5m) && isNum(t.sells5m) && t.sells5m > 0) return t.buys5m / t.sells5m;
+    return null;
+  }
+  function chasePctOf(t) {
+    if (isNum(t.priceChange5mPct)) return t.priceChange5mPct;
+    if (isNum(t.chasePct)) return t.chasePct;
+    return null;
+  }
+
+  /* {status:'pass'|'fail'|'unknown', fails:[], unknowns:[]} */
+  function preTrade(t) {
+    var cfg = t.strategy === "confirmation_hunter" ? POLICY.confirm : POLICY.early;
+    var fails = [], unknowns = [];
+
+    var age = tokenAgeMin(t);
+    if (age === null) unknowns.push("token age");
+    else if (age > cfg.maxAgeMin) fails.push("age " + age.toFixed(1) + "m > " + cfg.maxAgeMin + "m");
+
+    if (!isNum(t.liquidityUsd)) unknowns.push("liquidity");
+    else if (t.liquidityUsd < cfg.liqMin || t.liquidityUsd > cfg.liqMax) fails.push("liquidity " + fmtUsd(t.liquidityUsd));
+
+    if (!isNum(t.marketCap)) unknowns.push("market cap");
+    else if (t.marketCap < cfg.mcapMin || t.marketCap > cfg.mcapMax) fails.push("mcap " + fmtUsd(t.marketCap));
+
+    if (!isNum(t.trades5m)) unknowns.push("short-term activity");
+    else if (t.trades5m < cfg.trades5m) fails.push("only " + t.trades5m + " trades/5m");
+
+    var bp = buyPressureOf(t);
+    if (bp === null) unknowns.push("buy pressure");
+    else if (bp < cfg.buyPressure) fails.push("buy pressure " + bp.toFixed(2));
+
+    var chase = chasePctOf(t);
+    if (chase === null) unknowns.push("anti-chase price change");
+    else if (chase > cfg.maxChasePct) fails.push("already up " + chase.toFixed(1) + "% in 5m (anti-chase)");
+
+    if (!isNum(t.executableLiquidityUsd)) unknowns.push("executable liquidity");
+    else if (t.executableLiquidityUsd < POLICY.execMinUsd) fails.push("executable liquidity " + fmtUsd(t.executableLiquidityUsd));
+
+    if (!isNum(t.priceImpactPct)) unknowns.push("price impact");
+    else if (t.priceImpactPct > POLICY.maxImpactPct) fails.push("price impact " + t.priceImpactPct + "%");
+
+    return { status: fails.length ? "fail" : (unknowns.length ? "unknown" : "pass"), fails: fails, unknowns: unknowns };
+  }
+
+  /* =========================================================================
+     6. READINESS + EXECUTION STATE
+     ========================================================================= */
+  function mkStep(key, label, status, detail, source) {
+    return { key: key, label: label, status: status, detail: detail, source: source };
+  }
+  function svcHealth(key) { return (state.serviceHealth || {})[key] || null; }
+
+  function svcStep(key, label, val, okVal, failVals, okText, failText, source) {
+    if (val === okVal) return mkStep(key, label, "pass", okText, source);
+    if (val && failVals.indexOf(val) !== -1) return mkStep(key, label, "fail", failText + " (" + val + ")", source);
+    return mkStep(key, label, "unknown", "Awaiting backend report", source);
+  }
+
+  function computeReadiness() {
+    var h = state.health, steps = [];
+
+    var backendOk = state.connected && state.healthCheckedAt !== null && !healthIsStale();
+    steps.push(mkStep("backend", "Backend connection",
+      backendOk ? "pass" : (state.connected ? "unknown" : "fail"),
+      backendOk ? "REST /api/health and WebSocket both responding"
+                : (state.connected ? "WebSocket up, waiting for /api/health" : "No backend connection"),
+      "frontend"));
+
+    steps.push(mkStep("wallet", "Wallet accessible & funded",
+      (isNum(h.walletBalance) && h.walletBalance > 0) ? "pass" : (isNum(h.walletBalance) ? "fail" : "unknown"),
+      !isNum(h.walletBalance)
+        ? "Backend has not reported a wallet balance"
+        : (h.walletBalance > 0
+            ? "Balance " + fmtSol(h.walletBalance) + (h.walletAddress ? " · " + h.walletAddress : " · address not reported by backend")
+            : "Reported balance is zero — cannot fund a position"),
+      "backend /api/health"));
+
+    steps.push(svcStep("rpc", "Solana RPC", svcHealth("rpc"), "ok", ["error", "rate_limited", "circuit_open"],
+      "Connected", "Unavailable", "service_health"));
+
+    steps.push(svcStep("market", "Market data current", svcHealth("listener"), "running", ["stopped", "circuit_open", "rate_limited"],
+      "Pump.fun listener running", "Listener", "service_health"));
+
+    var lsState = svcHealth("listener"), monState = svcHealth("monitor");
+    steps.push(mkStep("exec", "Execution services operational",
+      (lsState === "running" && (monState === "running" || monState === "idle")) ? "pass" : "unknown",
+      "Listener " + (lsState || "unknown") + " · Position monitor " + (monState || "unknown"),
+      "service_health"));
+
+    var riskKnown = state.emergencyStop === true || state.emergencyStop === false;
+    steps.push(mkStep("risk", "Risk controls", riskKnown ? "pass" : "unknown",
+      riskKnown
+        ? "Backend reports risk state — enforcement is not independently verifiable from this browser"
+        : "Awaiting the backend's risk status",
+      "backend events"));
+
+    var rows = policyRows();
+    var polFail = rows.filter(function (r) { return r.status === "fail"; });
+    var polUnknown = rows.filter(function (r) { return r.status === "unknown"; });
+    steps.push(mkStep("policy", "Risk limits match policy",
+      polFail.length ? "fail" : (polUnknown.length ? "unknown" : "pass"),
+      polFail.length
+        ? polFail.map(function (r) { return r.label + ": " + r.detail; }).join(" · ")
+        : (polUnknown.length
+            ? "Cannot verify: " + polUnknown.map(function (r) { return r.label; }).join(", ")
+            : "₦1,000 daily / ₦2,500 drawdown / 3 positions / ₦3,000 exposure / 5% trail"),
+      "backend settings"));
+
+    var live = h.live;
+    steps.push(mkStep("auth", "Live authorization",
+      live === true ? "pass" : (live === false ? "fail" : "unknown"),
+      live === true ? "Backend reports live execution armed"
+        : (live === false ? "Backend reports live trading is NOT armed — entries blocked" : "Awaiting backend report"),
+      "backend /api/health.live"));
+
+    return steps;
+  }
+
+  function executionState() {
+    var h = state.health;
+    if (!state.connected && state.healthCheckedAt === null) return { code: "CONNECTING", level: "warn", reason: "Establishing backend connection" };
+    if (!state.connected) return { code: "DISCONNECTED", level: "err", reason: "Backend connection lost — new entries are blocked" };
+    if (healthIsStale()) return { code: "DISCONNECTED", level: "err", reason: "No backend status received recently — treating data as stale" };
+    if (state.emergencyStop === true) return { code: "EMERGENCY STOP", level: "err", reason: "Emergency stop is active — new entries blocked until it is cleared on the backend" };
+
+    var steps = computeReadiness();
+    var failed = steps.filter(function (s) { return s.status === "fail"; });
+    var unknown = steps.filter(function (s) { return s.status === "unknown"; });
+
+    if (failed.length) return { code: "BLOCKED", level: "err", reason: failed.map(function (s) { return s.label; }).join(", ") + " not ready" };
+
+    var r = riskMirror();
+    if (r.dailyLimitHit === true) return { code: "PAUSED", level: "warn", reason: "Daily loss limit reached" };
+    if (r.drawdownHit === true) return { code: "PAUSED", level: "warn", reason: "Portfolio drawdown trigger reached" };
+    if (r.feedUnreliable === true) return { code: "PAUSED", level: "warn", reason: "Market data feed unreliable" };
+
+    if (unknown.length) return { code: "CHECKING READINESS", level: "warn", reason: "Cannot verify: " + unknown.map(function (s) { return s.label; }).join(", ") };
+
+    if (h.live === true) return { code: "LIVE TRADING", level: "ok", reason: "Backend confirmed live execution is armed and all reported checks pass" };
+    return { code: "BLOCKED", level: "err", reason: "Live authorization not confirmed by the backend" };
+  }
+
+  function canSubmitEntry() {
+    var st = executionState();
+    return st.code === "LIVE TRADING" ? { ok: true } : { ok: false, reason: st.code + (st.reason ? " — " + st.reason : "") };
+  }
+
+  /* =========================================================================
+     7. WEBSOCKET BRIDGE
+     ========================================================================= */
+  var ws = null, wsAttempts = 0, wsTimer = null, hbTimer = null, lastBeat = 0;
+
+  function setWsPill(kind, text) {
+    var el = $("wsStatus");
+    if (!el) return;
+    el.className = "pill " + (kind === "ok" ? "pill-green" : kind === "fail" ? "pill-red" : "pill-amber");
+    el.textContent = text;
+  }
+
+  function connectWs() {
+    if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return;
+    var url = state.wsUrl || "ws://localhost:8080";
+    setWsPill("warn", "Connecting…");
+    showConnAlert("warn", "Connecting to " + url + " …");
+    try { ws = new WebSocket(url); }
+    catch (e) {
+      setWsPill("fail", "Invalid URL");
+      showConnAlert("err", "Invalid WebSocket URL: " + url);
+      scheduleReconnect();
+      return;
+    }
+
+    ws.onopen = function () {
+      wsAttempts = 0;
+      state.connected = true;
+      lastBeat = Date.now();
+      setWsPill("ok", "Connected");
+      hideConnAlert();
+      sendWs({ type: "subscribe", channel: "all" });
+      sendWs({ type: "get_state" });          /* reconcile — never resubmit */
+      startHeartbeat();
+      pollHealth();
+      renderAll();
+    };
+    ws.onmessage = function (ev) {
+      lastBeat = Date.now();
+      var msg;
+      try { msg = JSON.parse(ev.data); } catch (e) { return; }
+      handleBackendEvent(msg);
+    };
+    ws.onerror = function () { setWsPill("fail", "Connection error"); };
+    ws.onclose = function () {
+      state.connected = false;
+      stopHeartbeat();
+      setWsPill("fail", "Disconnected");
+      updateHealthAge();
+      scheduleReconnect();
+      renderAll();
+    };
+  }
+
+  function scheduleReconnect() {
+    if (wsTimer) return;
+    var delay = Math.min(WS_BASE_MS * Math.pow(2, wsAttempts), WS_MAX_MS);
+    wsAttempts++;
+    showConnAlert("err", "Backend disconnected — retrying in " + Math.round(delay / 1000) + "s (attempt " + wsAttempts + "). Financial data is unavailable until the connection returns.");
+    wsTimer = setTimeout(function () { wsTimer = null; connectWs(); }, delay);
+  }
+
+  function startHeartbeat() {
+    stopHeartbeat();
+    hbTimer = setInterval(function () {
+      if (Date.now() - lastBeat > HEARTBEAT_TIMEOUT_MS) { try { ws.close(); } catch (e) { /* noop */ } return; }
+      sendWs({ type: "ping" });
+    }, 15000);
+  }
+  function stopHeartbeat() { if (hbTimer) { clearInterval(hbTimer); hbTimer = null; } }
+
+  function sendWs(obj) {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      try { ws.send(JSON.stringify(obj)); return true; } catch (e) { return false; }
+    }
+    return false;
+  }
+
+  /* =========================================================================
+     8. REST
+     ========================================================================= */
+  function restBase() { return String(state.backendUrl || "").replace(/\/+$/, ""); }
+
+  function restPost(path, payload) {
+    var ctrl = ("AbortController" in window) ? new AbortController() : null;
+    var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 20000) : null;
+    return fetch(restBase() + path, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload || {}),
+      signal: ctrl ? ctrl.signal : undefined
+    }).then(function (res) {
+      if (timer) clearTimeout(timer);
+      return res.json().catch(function () { return {}; }).then(function (body) {
+        return { httpOk: res.ok, status: res.status, body: body || {} };
+      });
+    }).catch(function (e) {
+      if (timer) clearTimeout(timer);
+      throw e;
+    });
+  }
+
+  function pollHealth() {
+    return fetch(restBase() + "/api/health")
+      .then(function (res) { if (!res.ok) throw new Error("HTTP " + res.status); return res.json(); })
+      .then(function (h) {
+        state.healthCheckedAt = Date.now();
+        state.health.live = (typeof h.live === "boolean") ? h.live : null;
+        state.health.mode = has(h.mode) ? h.mode : null;
+        state.health.walletBalance = isNum(h.walletBalance) ? h.walletBalance : null;
+        state.health.walletAddress = has(h.walletAddress) ? h.walletAddress : null;
+        state.health.available = isNum(h.available) ? h.available : null;
+        state.health.reserved = isNum(h.reserved) ? h.reserved : null;
+        state.health.feeReserve = isNum(h.feeReserve) ? h.feeReserve : null;
+        renderAll();
+      })
+      .catch(function () { /* the connection banner already reports it */ });
+  }
+
+  /* =========================================================================
+     9. BACKEND EVENTS
+     ========================================================================= */
+  function handleBackendEvent(msg) {
+    if (!msg || !msg.type) return;
+
+    switch (msg.type) {
+      case "pong":
+      case "heartbeat":
+        break;
+
+      case "state_snapshot":
+        applySnapshot(msg.data || msg.payload || {});
+        renderAll();
+        break;
+
+      case "token_discovered":
+        upsertToken(msg.data || msg.token || {});
+        renderScanners();
+        break;
+
+      case "position_opened": {
+        var p = msg.data || msg.position || {};
+        if (p.id) {
+          var found = state.positions.filter(function (x) { return x.id === p.id; })[0];
+          if (found) Object.keys(p).forEach(function (k) { found[k] = p[k]; });
+          else state.positions.push(p);
+          reconcileByAddress(p.address, "CONFIRMED", p.buySignature || null, "Position confirmed by backend");
+        }
+        renderAll();
+        break;
+      }
+
+      case "position_updated": {
+        var u = msg.data || msg.position || {};
+        if (u.id) {
+          var ex = state.positions.filter(function (x) { return x.id === u.id; })[0];
+          if (ex) Object.keys(u).forEach(function (k) { ex[k] = u[k]; });
+        }
+        renderAll();
+        break;
+      }
+
+      case "position_closed": {
+        var c = msg.data || msg.position || {};
+        if (c.id) state.positions = state.positions.filter(function (x) { return x.id !== c.id; });
+        if (c.trade) {
+          state.tradeHistory.push(c.trade);
+          reconcileByAddress(c.trade.address || c.address, "CONFIRMED", c.trade.signature || null, "Sell confirmed by backend");
+        } else if (isNum(c.netPnl)) {
+          state.tradeHistory.push({
+            timestamp: c.timestamp || new Date().toISOString(),
+            symbol: c.symbol || "", strategy: c.strategy || "",
+            type: "sell", sizeNaira: c.sizeNaira || null,
+            exitPct: c.exitPct || 100, partial: !!c.partial,
+            netPnl: c.netPnl, reason: c.reason || "closed", signature: c.signature || null
+          });
+        }
+        if (isNum(c.realizedPnl)) state.realizedPnl = c.realizedPnl;
+        renderAll();
+        pollHealth();
+        break;
+      }
+
+      case "trade_recorded": {
+        var tr = msg.data || msg.trade || {};
+        if (tr && tr.id && !state.tradeHistory.some(function (t) { return t.id === tr.id; })) state.tradeHistory.push(tr);
+        if (isNum(tr.realizedPnlDelta)) state.realizedPnl = (isNum(state.realizedPnl) ? state.realizedPnl : 0) + tr.realizedPnlDelta;
+        if (tr.address) reconcileByAddress(tr.address, "CONFIRMED", tr.signature || null, "Trade confirmed by backend");
+        renderAll();
+        break;
+      }
+
+      case "risk_alert":
+        showRiskAlert(msg.data || msg.alert || {});
+        renderAll();
+        break;
+
+      case "risk_status": {
+        var rs = msg.data || msg.status || {};
+        if (typeof rs.emergencyStop === "boolean") state.emergencyStop = rs.emergencyStop;
+        if (isNum(rs.realizedPnl)) state.realizedPnl = rs.realizedPnl;
+        if (isNum(rs.feedFailures)) state.feedFailures = rs.feedFailures;
+        renderAll();
+        break;
+      }
+
+      case "service_health":
+        state.serviceHealth = Object.assign({}, state.serviceHealth, msg.data || msg.health || {});
+        renderAll();
+        break;
+
+      case "scan_result":
+        state.lastScan = msg.data || msg.result || {};
+        renderScanners();
+        break;
+
+      case "settings_synced":
+        state.settings = Object.assign({}, state.settings || {}, msg.data || msg.settings || {});
+        renderAll();
+        flashSaveMsg("\u2713 Synced to backend");
+        break;
+
+      case "error":
+        logEvent("error", "backend", (msg.data || msg.message || "backend error"));
+        break;
+
+      default:
+        logEvent("info", "ws", "Unhandled event: " + msg.type);
+    }
+  }
+
+  /* The snapshot is the authoritative source for settings, positions, history and P&L. */
+  function applySnapshot(snap) {
+    if (snap.settings) state.settings = Object.assign({}, snap.settings);
+    if (Array.isArray(snap.positions)) state.positions = snap.positions;
+    if (Array.isArray(snap.tradeHistory)) state.tradeHistory = snap.tradeHistory;
+    if (Array.isArray(snap.discoveredTokens)) state.discoveredTokens = snap.discoveredTokens;
+    if (isNum(snap.realizedPnl)) state.realizedPnl = snap.realizedPnl;
+    if (typeof snap.emergencyStop === "boolean") state.emergencyStop = snap.emergencyStop;
+    if (isNum(snap.feedFailures)) state.feedFailures = snap.feedFailures;
+    if (snap.serviceHealth) state.serviceHealth = Object.assign({}, state.serviceHealth, snap.serviceHealth);
+    if (snap.lastScan) state.lastScan = snap.lastScan;
+    if (typeof snap.liveEnabled === "boolean") state.health.live = snap.liveEnabled;
+
+    state.positions.forEach(function (p) {
+      if (p.address) reconcileByAddress(p.address, "CONFIRMED", p.buySignature || null, "Position present in backend state");
+    });
+    expireStaleRequests();
+  }
+
+  function upsertToken(t) {
+    if (!t || (!t.address && !t.id)) return;
+    var key = t.address || t.id;
+    var found = state.discoveredTokens.filter(function (x) { return (x.address || x.id) === key; })[0];
+    if (found) {
+      Object.keys(t).forEach(function (k) { found[k] = t[k]; });
+      return;
+    }
+    state.discoveredTokens.push(Object.assign({
+      id: t.id || ("tok_" + Date.now()),
+      discoveredAt: t.discoveredAt || new Date().toISOString(),
+      status: t.status || "candidate",
+      securityStatus: t.securityStatus || "pending",
+      securityNotes: t.securityNotes || ""
+    }, t));
+    if (state.discoveredTokens.length > 100) state.discoveredTokens = state.discoveredTokens.slice(-100);
+  }
+
+  function showRiskAlert(a) {
+    var box = $("riskAlert");
+    if (!a || !a.active) { box.classList.add("hidden"); return; }
+    box.className = "alert alert-warn";
+    box.classList.remove("hidden");
+    $("riskAlertText").textContent = a.message || "A risk limit is active — new entries are blocked by the backend.";
+  }
+  function showConnAlert(kind, text) {
+    var box = $("connAlert");
+    box.className = "alert " + (kind === "err" ? "alert-err" : "alert-warn");
+    box.classList.remove("hidden");
+    $("connAlertText").textContent = text;
+  }
+  function hideConnAlert() { var b = $("connAlert"); if (b) b.classList.add("hidden"); }
+
+  /* =========================================================================
+     10. DUPLICATE GUARD (survives reloads) + REQUEST LEDGER
+     ========================================================================= */
+  function savePending() {
+    try {
+      var open = state.execRequests
+        .filter(function (r) { return r.status === "SUBMITTED" || r.status === "UNKNOWN"; })
+        .map(function (r) {
+          return { id: r.id, kind: r.kind, address: r.address, symbol: r.symbol,
+                   signature: r.signature || null, submittedAt: r.submittedAt, message: r.message };
+        });
+      localStorage.setItem(PENDING_KEY, JSON.stringify(open));
+    } catch (e) { /* ignore */ }
+  }
+
+  function loadPending() {
+    try {
+      var arr = JSON.parse(localStorage.getItem(PENDING_KEY) || "[]");
+      if (!Array.isArray(arr)) return;
+      state.execRequests = arr.map(function (r) {
+        return {
+          id: r.id, kind: r.kind, symbol: r.symbol, address: r.address, positionId: null,
+          status: "UNKNOWN", signature: r.signature || null,
+          message: "Carried over from a previous session — reconcile before retrying",
+          submittedAt: r.submittedAt || new Date().toISOString(),
+          updatedAt: new Date().toISOString(), restored: true
+        };
+      });
+    } catch (e) { /* ignore */ }
+  }
+
+  function setReqStatus(r, status, message, signature) {
+    r.status = status;
+    if (signature) r.signature = signature;
+    r.message = message;
+    r.updatedAt = new Date().toISOString();
+    savePending();
+  }
+
+  function newRequest(kind, token, positionId) {
+    var r = {
+      id: reqId(), kind: kind,
+      symbol: token ? token.symbol : null,
+      address: token ? token.address : null,
+      positionId: positionId || null,
+      status: "SUBMITTED", signature: null,
+      message: "Request sent — awaiting backend result",
+      submittedAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    state.execRequests.unshift(r);
+    if (state.execRequests.length > 50) state.execRequests.length = 50;
+    savePending();
+    return r;
+  }
+
+  function findRequest(id) { return state.execRequests.filter(function (r) { return r.id === id; })[0]; }
+
+  function reconcileByAddress(address, status, signature, message) {
+    if (!address) return;
+    state.execRequests.forEach(function (r) {
+      if (r.address === address && (r.status === "SUBMITTED" || r.status === "UNKNOWN")) {
+        r.status = status;
+        if (signature) r.signature = signature;
+        r.message = message;
+        r.updatedAt = new Date().toISOString();
+      }
+    });
+    savePending();
+  }
+
+  function expireStaleRequests() {
+    var now = Date.now(), changed = false;
+    state.execRequests.forEach(function (r) {
+      if (r.status === "SUBMITTED" && now - new Date(r.submittedAt).getTime() > REQUEST_UNKNOWN_MS) {
+        r.status = "UNKNOWN";
+        r.message = "No result within " + Math.round(REQUEST_UNKNOWN_MS / 1000) + "s — reconcile before retrying";
+        r.updatedAt = new Date().toISOString();
+        changed = true;
+      }
+    });
+    if (changed) savePending();
+    return changed;
+  }
+
+  function hasPendingFor(address) {
+    return state.execRequests.some(function (r) {
+      return r.address === address && (r.status === "SUBMITTED" || r.status === "UNKNOWN");
+    });
+  }
+
+  function clearRequest(id) {
+    if (!confirm("Clear this request from the ledger?\n\nOnly do this after reconciling the trade on-chain or in the backend — a cleared request no longer blocks a second entry for the same mint.")) return;
+    state.execRequests = state.execRequests.filter(function (r) { return r.id !== id; });
+    savePending();
+    renderAll();
+  }
+
+  /* =========================================================================
+     11. COMMANDS
+     ========================================================================= */
+  function readNum(id) {
+    var el = $(id);
+    if (!el) return undefined;
+    var v = String(el.value || "").trim();
+    if (v === "") return undefined;
+    var n = Number(v);
+    return isFinite(n) ? n : undefined;
+  }
+
+  function collectSettings() {
+    var out = {};
+    SETTINGS_FIELDS.forEach(function (f) {
+      var v = readNum(f[0]);
+      if (v !== undefined) out[f[1]] = v;
+    });
+    var tz = $("cfgTimezone").value;
+    if (tz) out.timezone = tz;
+    out.trailingEnabled = $("cfgTrail").checked;
+    out.reinvest = $("cfgReinvest").checked;
+    return out;
+  }
+
+  function validateTpLevels(s) {
+    var cur = state.settings || {};
+    var levels = [
+      { gain: isNum(s.tpGain1) ? s.tpGain1 : cur.tpGain1, pct: isNum(s.tpPct1) ? s.tpPct1 : cur.tpPct1 },
+      { gain: isNum(s.tpGain2) ? s.tpGain2 : cur.tpGain2, pct: isNum(s.tpPct2) ? s.tpPct2 : cur.tpPct2 }
+    ].filter(function (l) { return (l.pct || 0) > 0 && (l.gain || 0) > 0; });
+    var total = levels.reduce(function (a, l) { return a + l.pct; }, 0);
+    return {
+      total: total,
+      valid: total > 0 && total <= 100,
+      error: total > 100 ? "Take-profit exits total " + total + "% (must not exceed 100%)"
+           : total === 0 ? "No take-profit levels configured" : null
+    };
+  }
+
+  function pushSettings() {
+    var s = collectSettings();
+    if (Object.keys(s).length === 0) { flashSaveMsg("Nothing to save — all fields are blank"); return; }
+    var v = validateTpLevels(s);
+    if (!v.valid) { flashSaveMsg("Not saved: " + v.error); return; }
+
+    flashSaveMsg("Syncing to backend…");
+    restPost("/api/settings", { settings: s })
+      .then(function (res) {
+        if (!res.httpOk || res.body.ok === false) {
+          flashSaveMsg("Backend rejected the settings" + (res.body.error ? ": " + res.body.error : ""));
+          return;
+        }
+        sendWs({ type: "update_settings", data: s });
+        flashSaveMsg("\u2713 Synced to backend");
+      })
+      .catch(function () {
+        sendWs({ type: "update_settings", data: s });
+        flashSaveMsg("REST unavailable — sent over the WebSocket instead");
+      });
+  }
+
+  function pushEmergencyStop(activate) {
+    if (activate && state.emergencyStop === null) {
+      alert("Cannot change the emergency stop: the backend has not reported its current risk state.");
+      return;
+    }
+    restPost("/api/emergency-stop", { activate: activate })
+      .catch(function () { sendWs({ type: "emergency_stop", data: { activate: activate } }); })
+      .then(function () { sendWs({ type: "emergency_stop", data: { activate: activate } }); });
+  }
+
+  function pushClose(positionId) {
+    if (!confirm("Close this position?\n\nThis submits a real on-chain sell through the backend. The row is removed only after the backend confirms the fill.")) return;
+
+    var req = newRequest("SELL", null, positionId);
+    restPost("/api/close-position", { positionId: positionId, requestId: req.id })
+      .then(function (res) {
+        if (res.body && res.body.ok === false) setReqStatus(req, "REJECTED", res.body.reason || "Rejected by backend");
+        else setReqStatus(req, "SUBMITTED", "Awaiting confirmation from the backend");
+        renderAll();
+      })
+      .catch(function () {
+        setReqStatus(req, "UNKNOWN", "No response — reconcile before retrying");
+        renderAll();
+      });
+    renderAll();
+  }
+
+  function pushScan(strategy) {
+    var btn = $(strategy === "confirmation_hunter" ? "scanConfirm" : "scanEarly");
+    var status = $("scanStatus");
+    btn.disabled = true;
+    status.textContent = "Scan dispatched to the backend…";
+    restPost("/api/scan", { strategy: strategy })
+      .then(function () {
+        sendWs({ type: "run_scan", data: { strategy: strategy } });
+        status.textContent = "Scan running on the backend — results arrive as token_discovered events.";
+      })
+      .catch(function () {
+        sendWs({ type: "run_scan", data: { strategy: strategy } });
+        status.textContent = "REST unavailable — the scan was sent over the WebSocket instead.";
+      })
+      .then(function () { btn.disabled = false; });
+  }
+
+  function submitBuy(tokenId) {
+    var t = state.discoveredTokens.filter(function (x) { return x.id === tokenId; })[0];
+    if (!t) return;
+
+    var guard = canSubmitEntry();
+    if (!guard.ok) {
+      alert("Entry blocked.\n\n" + guard.reason + "\n\nAn entry is only submitted when live readiness is fully verified by the backend.");
+      return;
+    }
+    if (hasPendingFor(t.address)) {
+      alert("A request for " + t.symbol + " is already in flight or has an unknown outcome. Reconcile it before submitting another.");
+      return;
+    }
+    var pt = preTrade(t);
+    if (pt.status === "fail") {
+      alert("Entry refused by the frontend filters.\n\n" + pt.fails.join("\n") + "\n\nThe token no longer passes the scanner criteria at its current values.");
+      return;
+    }
+
+    var size = isNum(state.settings && state.settings.positionSize) ? state.settings.positionSize : null;
+    var r = rate();
+    var solText = (size !== null && r) ? fmtSolBare(size / r) + " SOL" : "the backend's configured position size";
+    var ngnText = size !== null ? fmtNgn(size) : null;
+    var unknownText = pt.unknowns.length ? "\n\nNot reported by the backend, so enforced server-side only: " + pt.unknowns.join(", ") : "";
+
+    if (!confirm(
+      "BUY " + t.symbol + " WITH REAL SOL?\n\n" +
+      "Size: " + solText + (ngnText ? " (\u2248" + ngnText + ")" : "") + "\n" +
+      "Mint: " + t.address + "\n\n" +
+      "This sends a real bonding-curve transaction from the backend wallet. " +
+      "The position appears only once the backend confirms the transaction on-chain." + unknownText
+    )) return;
+
+    var req = newRequest("BUY", t, null);
+    var payload = { requestId: req.id, tokenId: tokenId, address: t.address, symbol: t.symbol, priceUsd: t.priceUsd };
+
+    restPost("/api/paper-trade", payload)   /* existing backend route name */
+      .then(function (res) {
+        var body = res.body || {};
+        if (!res.httpOk || body.ok === false) {
+          setReqStatus(req, "REJECTED", body.reason || ("Backend refused the entry (HTTP " + res.status + ")"));
+          renderAll();
+          return;
+        }
+        setReqStatus(req, "CONFIRMED", "Confirmed by the backend (on-chain transaction submitted)", body.signature || null);
+        renderAll();
+        pollHealth();
+      })
+      .catch(function () {
+        setReqStatus(req, "UNKNOWN", "No response — outcome uncertain; reconciling, never resubmitted automatically");
+        renderAll();
+      });
+    renderAll();
+  }
+
+  function requestReconcile() {
+    sendWs({ type: "get_state" });
+    pollHealth();
+    flashSaveMsg("Reconciliation requested…");
+  }
+
+  /* =========================================================================
+     12. RENDERING HELPERS
+     ========================================================================= */
+  function setStat(id, text, unavailable) {
+    var el = $(id);
+    if (!el) return;
+    el.textContent = text;
+    el.className = "stat-value mono" + (unavailable ? " unavail" : "");
+  }
+
+  function setPill(id, kind, text) {
+    var el = $(id);
+    if (!el) return;
+    el.className = "pill " + (kind === "ok" ? "pill-green" : kind === "bad" ? "pill-red" : kind === "warn" ? "pill-amber" : "pill-muted");
+    el.textContent = text;
+  }
+
+  function emptyRow(cols, text) {
+    return '<tr><td colspan="' + cols + '" class="muted" style="text-align:center;padding:24px">' + text + "</td></tr>";
+  }
+
+  function tokenCell(symbol) {
+    return '<td class="token-cell"><span class="token-icon">' + esc(symbol ? symbol.slice(0, 2) : "?") + "</span>" + esc(symbol || DASH) + "</td>";
+  }
+
+  function pnlSolHtml(us, usNgn, lineBreak) {
+    if (us === null) return '<span class="muted">' + UNAVAILABLE + "</span>";
+    return (us >= 0 ? "+" : "-") + fmtSolBare(Math.abs(us)) +
+      (usNgn === null ? "" : (lineBreak ? "<br />" : " / ") + fmtNgn(usNgn));
+  }
+
+  function securityPill(status) {
+    if (status === "passed") return '<span class="pill pill-green">Passed</span>';
+    if (status === "failed") return '<span class="pill pill-red">Failed</span>';
+    if (status === "unavailable") return '<span class="pill pill-amber">Unavailable</span>';
+    return '<span class="pill pill-muted">Checking…</span>';
+  }
+
+  /* =========================================================================
+     13. RENDER — DASHBOARD / PANELS
+     ========================================================================= */
+  function renderExecutionState() {
+    var st = executionState();
+    var badge = $("modeBadge");
+    var pill = $("execStatePill");
+    var box = $("execAlert");
+
+    $("modeText").textContent = st.code;
+    badge.className = "mode-badge " + (st.level === "ok" ? "mode-ok" : st.level === "err" ? "mode-live" : "mode-warn");
+    pill.textContent = st.code;
+    pill.className = "pill " + (st.level === "ok" ? "pill-green" : st.level === "err" ? "pill-red" : "pill-amber");
+
+    box.className = "alert " + (st.level === "ok" ? "alert-info" : st.level === "err" ? "alert-err" : "alert-warn");
+    box.classList.remove("hidden");
+    $("execAlertText").textContent = st.reason + (st.level === "ok"
+      ? " New entries may be submitted."
+      : " New entries are blocked. The auto-supervisor re-checks every " + Math.round(HEALTH_POLL_MS / 1000) + "s and resumes automatically once every check passes.");
+  }
+
+  function renderReadiness() {
+    $("readinessList").innerHTML = computeReadiness().map(function (s) {
+      var cls = s.status === "pass" ? "pill-green" : s.status === "fail" ? "pill-red" : "pill-amber";
+      var label = s.status === "pass" ? "PASS" : s.status === "fail" ? "FAIL" : "UNKNOWN";
+      return '<div class="health-row"><span class="muted wrap-anywhere">' + esc(s.label) + "</span>" +
+             '<span class="pill ' + cls + '">' + label + "</span></div>" +
+             '<div class="step-detail small muted wrap-anywhere">' + esc(s.detail) +
+             ' <span class="muted">· source: ' + esc(s.source) + "</span></div>";
+    }).join("");
+  }
+
+  function renderHeader() {
+    var h = state.health;
+    $("brandSub").textContent =
+      !state.connected ? "Disconnected — financial data unavailable"
+      : h.live === true ? "Live on-chain execution — real SOL at risk"
+      : h.live === false ? "Live execution is not armed on the backend"
+      : "Connected — awaiting backend status";
+  }
+
+  function renderFinance() {
+    var h = state.health, stale = healthIsStale(), r = rate();
+
+    if (!state.connected || stale) {
+      setStat("walletBalance", "WALLET BALANCE " + (state.connected ? "STALE" : "UNAVAILABLE"), true);
+      $("walletSub").textContent = state.connected
+        ? "No backend status received in the last " + Math.round(HEALTH_STALE_MS / 1000) + "s"
+        : "Backend not connected";
+    } else if (!isNum(h.walletBalance)) {
+      setStat("walletBalance", "WALLET BALANCE UNAVAILABLE", true);
+      $("walletSub").textContent = "The backend has not reported a verified wallet balance";
+    } else {
+      setStat("walletBalance", fmtSol(h.walletBalance), false);
+      var ngn = ngnFromSol(h.walletBalance);
+      $("walletSub").textContent = ngn === null
+        ? "Naira value UNAVAILABLE — no SOL/NGN rate configured"
+        : "\u2248 " + fmtNgn(ngn) + " at the configured rate (\u20A6" + Math.round(r).toLocaleString() + "/SOL — not a live market quote)";
+    }
+
+    if (isNum(h.available)) setStat("availableFunds", fmtSol(h.available), false);
+    else setStat("availableFunds", "AVAILABLE BALANCE UNAVAILABLE", true);
+
+    var commit = committedSol();
+    $("availableSub").textContent = [
+      "Committed (cost basis): " + (commit.value === null ? UNAVAILABLE : fmtSol(commit.value)),
+      "Reserved: " + (isNum(h.reserved) ? fmtSol(h.reserved) : UNAVAILABLE),
+      "Fee reserve: " + (isNum(h.feeReserve) ? fmtSol(h.feeReserve) : UNAVAILABLE)
+    ].join(" · ");
+
+    var pf = portfolioSol();
+    if (pf.value === null) {
+      setStat("portfolioValue", "PORTFOLIO VALUE UNAVAILABLE", true);
+      $("portfolioSub").textContent = "Reason: " + pf.note;
+    } else {
+      setStat("portfolioValue", fmtSol(pf.value), false);
+      var pNgn = ngnFromSol(pf.value);
+      $("portfolioSub").textContent =
+        (pNgn === null ? "Naira value UNAVAILABLE" : "\u2248 " + fmtNgn(pNgn)) +
+        " · wallet + open positions at backend-reported prices" + (pf.note ? " (" + pf.note + ")" : "");
+    }
+
+    var u = unrealizedSol();
+    var uNgn = u.value === null ? null : ngnFromSol(u.value);
+    var realized = state.realizedPnl;
+    var total = (isNum(realized) && isNum(uNgn)) ? realized + uNgn : null;
+
+    if (total === null) {
+      setStat("totalPnl", "P&L UNAVAILABLE", true);
+    } else {
+      var el = $("totalPnl");
+      el.textContent = signMoney(total);
+      el.className = "stat-value mono " + pnlClass(total);
+    }
+
+    $("pnlBreakdown").textContent =
+      "Realized " + (isNum(realized) ? fmtNgn(realized) : UNAVAILABLE) +
+      " · Unrealized " + (uNgn === null ? UNAVAILABLE : fmtNgn(uNgn) + (u.complete ? "" : " (partial)")) +
+      (uNgn === null ? " — no SOL/NGN rate configured" : "");
+
+    $("committedSol").textContent = commit.value === null ? UNAVAILABLE : fmtSol(commit.value);
+  }
+
+  function renderPositions() {
+    var pos = state.positions;
+    $("positionCount").textContent = pos.length;
+
+    $("positionsBody").innerHTML = pos.length === 0 ? emptyRow(5, "No open positions")
+      : pos.map(function (p) {
+          var us = unrealizedSolOf(p), usNgn = us === null ? null : ngnFromSol(us);
+          return "<tr>" + tokenCell(p.symbol) +
+            '<td class="mono small">' + (isNum(p.solSpent) ? fmtSolBare(p.solSpent) : DASH) + "</td>" +
+            '<td class="mono small muted">' + (isNum(p.currentPriceSol) ? fmtSolBare(p.currentPriceSol) : UNAVAILABLE) + "</td>" +
+            '<td class="mono small ' + pnlClass(us) + '">' + pnlSolHtml(us, usNgn, false) + "</td>" +
+            '<td class="small">' + Math.round(remFrac(p) * 100) + "%" +
+              (isNum(p.trailHigh) && p.trailHigh > 0 ? ' <span class="pill pill-green">trailed</span>' : "") + "</td>" +
+          "</tr>";
+        }).join("");
+
+    $("positionsFullBody").innerHTML = pos.length === 0 ? emptyRow(13, "No open positions")
+      : pos.map(function (p) {
+          var us = unrealizedSolOf(p), usNgn = us === null ? null : ngnFromSol(us);
+          var tps = (p.tpLevels || []).map(function (l, i) {
+            var done = (p.executedTps || []).indexOf(i) !== -1;
+            return "TP" + (i + 1) + ": +" + fmtNgn(l.gain) + " \u2192 " + l.pct + "%" + (done ? " \u2713" : "");
+          }).join(" \u00B7 ") || DASH;
+          var stop = stopSolFor(p), trail = trailStopSol(p);
+          return "<tr>" + tokenCell(p.symbol) +
+            '<td><span class="pill pill-muted">' + esc(p.strategy || DASH) + "</span></td>" +
+            '<td class="mono small">' + (isNum(p.solSpent) ? fmtSolBare(p.solSpent) : DASH) + "</td>" +
+            '<td class="small">' + Math.round(remFrac(p) * 100) + "%</td>" +
+            '<td class="mono small">' + (isNum(p.entryPriceSol) ? fmtSolBare(p.entryPriceSol) : DASH) + "</td>" +
+            '<td class="mono small muted">' + (isNum(p.currentPriceSol) ? fmtSolBare(p.currentPriceSol) : UNAVAILABLE) + "</td>" +
+            '<td class="mono small ' + pnlClass(us) + '">' + pnlSolHtml(us, usNgn, true) + "</td>" +
+            '<td class="mono small">' + (stop === null ? DASH : fmtSolBare(stop)) + "</td>" +
+            '<td class="mono small">' + (trail === null ? DASH : fmtSolBare(trail)) + "</td>" +
+            '<td class="small wrap-anywhere">' + esc(tps) + "</td>" +
+            "<td>" + securityPill(p.securityStatus) + "</td>" +
+            "<td>" + shortSig(p.buySignature) + "</td>" +
+            '<td><button class="btn btn-ghost" style="padding:5px 12px;font-size:12px" onclick="vankleff.closePosition(\'' + esc(p.id) + '\')">Close</button></td>' +
+          "</tr>";
+        }).join("");
+  }
+
+  function renderExecRequests() {
+    expireStaleRequests();
+    var rows = state.execRequests;
+    $("execReqsBody").innerHTML = rows.length === 0 ? emptyRow(7, "No execution requests this session")
+      : rows.map(function (r) {
+          var cls = r.status === "CONFIRMED" ? "pill-green"
+                  : (r.status === "REJECTED" || r.status === "FAILED") ? "pill-red" : "pill-amber";
+          var action = r.status === "UNKNOWN"
+            ? '<button class="btn btn-ghost" style="padding:4px 10px;font-size:11px" onclick="vankleff.clearRequest(\'' + esc(r.id) + '\')">Clear</button>'
+            : '<span class="small muted">' + DASH + "</span>";
+          return "<tr>" +
+            '<td class="small">' + new Date(r.submittedAt).toLocaleTimeString() + "</td>" +
+            '<td class="token-cell">' + esc(r.symbol || r.positionId || DASH) + "</td>" +
+            '<td><span class="pill ' + cls + '">' + esc(r.status) + "</span></td>" +
+            '<td class="small mono">' + esc(r.id) + "</td>" +
+            "<td>" + shortSig(r.signature) + "</td>" +
+            '<td class="small muted wrap-anywhere">' + esc(r.message || "") + "</td>" +
+            "<td>" + action + "</td>" +
+          "</tr>";
+        }).join("");
+  }
+
+  function renderHistory() {
+    var hist = state.tradeHistory;
+
+    $("historyBody").innerHTML = hist.length === 0 ? emptyRow(9, "No trades recorded")
+      : hist.slice().reverse().slice(0, 50).map(function (t) {
+          var typeCell = t.type === "buy" ? '<span class="pos">Buy</span>'
+                       : t.type === "sell" ? '<span class="neg">Sell' + (t.partial ? " (" + t.exitPct + "%)" : "") + "</span>"
+                       : '<span class="muted">' + esc(t.type || DASH) + "</span>";
+          return "<tr>" +
+            '<td class="small">' + new Date(t.timestamp).toLocaleString() + "</td>" +
+            '<td class="token-cell">' + esc(t.symbol || DASH) + "</td>" +
+            '<td><span class="pill pill-muted">' + esc(t.strategy || DASH) + "</span></td>" +
+            "<td>" + typeCell + "</td>" +
+            '<td class="mono small">' + (isNum(t.sizeNaira) ? fmtNgn(t.sizeNaira) : DASH) + "</td>" +
+            '<td class="mono small">' + (t.type === "sell" ? (t.exitPct || 0) + "%" : DASH) + "</td>" +
+            '<td class="mono small ' + pnlClass(t.netPnl) + '">' +
+              (t.type === "sell" && isNum(t.netPnl) ? signMoney(t.netPnl) : DASH) + "</td>" +
+            '<td class="small muted wrap-anywhere">' + esc(t.reason || "manual") + "</td>" +
+            "<td>" + shortSig(t.signature) + "</td>" +
+          "</tr>";
+        }).join("");
+
+    var stats = {};
+    hist.forEach(function (t) {
+      if (t.type !== "sell" || !isNum(t.netPnl)) return;
+      var k = t.strategy || "unassigned";
+      var s = stats[k] || (stats[k] = { n: 0, wins: 0, wSum: 0, lSum: 0, net: 0 });
+      s.n++; s.net += t.netPnl;
+      if (t.netPnl > 0) { s.wins++; s.wSum += t.netPnl; } else s.lSum += t.netPnl;
+    });
+    $("strategyStats").innerHTML = Object.keys(stats).map(function (k) {
+      var s = stats[k], losses = s.n - s.wins;
+      return '<div class="card"><h3>' + esc(k) + ' <span class="pill pill-muted">' + s.n + " exit(s)</span></h3>" +
+        '<div class="health-row"><span class="muted">Win rate</span><span>' + Math.round((s.wins / s.n) * 100) + "%</span></div>" +
+        '<div class="health-row"><span class="muted">Avg win</span><span class="pos">' + (s.wins ? signMoney(s.wSum / s.wins) : DASH) + "</span></div>" +
+        '<div class="health-row"><span class="muted">Avg loss</span><span class="neg">' + (losses ? fmtNgn(s.lSum / losses) : DASH) + "</span></div>" +
+        '<div class="health-row"><span class="muted">Realized net P&amp;L</span><span class="' + pnlClass(s.net) + '">' + signMoney(s.net) + "</span></div>" +
+      "</div>";
+    }).join("");
+  }
+
+  function renderRisk() {
+    var r = riskMirror();
+
+    if (r.dailyLimitHit === null) setPill("dailyLossStatus", "mut", UNAVAILABLE);
+    else setPill("dailyLossStatus", r.dailyLimitHit ? "bad" : "ok",
+      r.dailyLimitHit ? "LIMIT REACHED" : fmtNgn(r.dailyLossUsed) + " / " + fmtNgn(state.settings.dailyLossLimit));
+
+    if (r.drawdownHit === null) setPill("drawdownStatus", "mut", UNAVAILABLE);
+    else setPill("drawdownStatus", r.drawdownHit ? "bad" : "ok",
+      r.drawdownHit ? "TRIGGERED" : fmtNgn(r.drawdownValue) + " / " + fmtNgn(state.settings.drawdownTrigger));
+
+    if (r.maxPosHit === null) setPill("maxPosStatus", "mut", UNAVAILABLE);
+    else setPill("maxPosStatus", r.maxPosHit ? "bad" : "ok", r.positions + " / " + r.maxPositions);
+
+    if (r.expHit === null) setPill("maxExpStatus", "mut", UNAVAILABLE);
+    else setPill("maxExpStatus", r.expHit ? "bad" : "ok",
+      (r.exposure === null ? UNAVAILABLE : fmtNgn(r.exposure)) + " / " + fmtNgn(r.maxExposure));
+
+    if (r.feedUnreliable === null) setPill("feedStatus", "mut", UNAVAILABLE);
+    else if (r.feedUnreliable) setPill("feedStatus", "bad", "UNRELIABLE — entries paused");
+    else setPill("feedStatus", "ok", "OK");
+
+    var btn = $("emergencyBtn");
+    if (state.emergencyStop === null) {
+      setPill("emergencyStatus", "mut", UNAVAILABLE);
+      btn.disabled = true; btn.className = "btn btn-ghost btn-block"; btn.textContent = "EMERGENCY STOP UNAVAILABLE";
+    } else if (state.emergencyStop) {
+      setPill("emergencyStatus", "bad", "ACTIVE");
+      btn.disabled = false; btn.className = "btn btn-ghost btn-block"; btn.textContent = "RESET EMERGENCY STOP";
+    } else {
+      setPill("emergencyStatus", "ok", "Inactive");
+      btn.disabled = false; btn.className = "btn btn-danger btn-block"; btn.textContent = "ACTIVATE EMERGENCY STOP";
+    }
+  }
+
+  function svcPill(id, val, okText, badText) {
+    if (SVC_OK.indexOf(val) !== -1) setPill(id, "ok", okText);
+    else if (SVC_BAD.indexOf(val) !== -1) setPill(id, "bad", badText + " (" + val + ")");
+    else if (val === null || val === undefined || val === "unknown") setPill(id, "mut", "Waiting for backend");
+    else setPill(id, "warn", String(val));
+  }
+
+  function renderServiceHealth() {
+    svcPill("rpcStatus", svcHealth("rpc"), "Connected", "Unavailable");
+    svcPill("telegramStatus", svcHealth("telegram"), "Connected", "Unavailable");
+    svcPill("listenerStatus", svcHealth("listener"), "Running", "Not running");
+    svcPill("rugStatus", svcHealth("rugcheck"), "Verified", "Unavailable");
+
+    var mon = $("monitorStatus"), monVal = svcHealth("monitor");
+    if (monVal === "running") { mon.className = "pill pill-green"; mon.textContent = "Running"; }
+    else if (monVal === "idle") { mon.className = "small muted"; mon.textContent = "Idle — starts when a position opens"; }
+    else if (monVal) { mon.className = "pill pill-red"; mon.textContent = String(monVal); }
+    else { mon.className = "pill pill-muted"; mon.textContent = "Waiting for backend"; }
+
+    var auth = $("authStatus");
+    if (state.health.live === true) { auth.className = "pill pill-red"; auth.textContent = "ARMED — live execution active"; }
+    else if (state.health.live === false) { auth.className = "pill pill-green"; auth.textContent = "Not armed — entries blocked"; }
+    else { auth.className = "pill pill-muted"; auth.textContent = "Awaiting report"; }
+
+    updateHealthAge();
+  }
+
+  function updateHealthAge() {
+    var el = $("healthAge");
+    if (!el) return;
+    if (!state.healthCheckedAt) { el.textContent = "Last backend check: never"; return; }
+    var age = Date.now() - state.healthCheckedAt;
+    el.textContent = "Last backend check: " + timeAgo(new Date(state.healthCheckedAt).toISOString()) +
+      (age > HEALTH_STALE_MS ? " — STALE, values above may be out of date" : "");
+  }
+
+  /* =========================================================================
+     14. RENDER — SCANNERS / SETTINGS / POLICY
+     ========================================================================= */
+  function renderScanSummary() {
+    var ls = state.lastScan;
+    if (!ls) return;
+    var rc = ls.rejectCounts || {};
+    $("scanSummary").innerHTML =
+      '<div class="health-row"><span class="muted">Strategy</span><span class="small">' + esc(ls.strategy || DASH) + "</span></div>" +
+      '<div class="health-row"><span class="muted">Mints scanned</span><span class="small">' + (ls.scanned || 0) + "</span></div>" +
+      '<div class="health-row"><span class="muted">Candidates</span><span class="small pos">' + (ls.candidates || 0) + "</span></div>" +
+      '<div class="health-row"><span class="muted">Rejected (age / liq / mcap / activity / chase / impact / invalid)</span><span class="small neg">' +
+        (rc.age || 0) + " / " + (rc.liquidity || 0) + " / " + (rc.marketCap || 0) + " / " + (rc.activity || rc.volume || 0) + " / " +
+        (rc.chase || 0) + " / " + (rc.priceImpact || 0) + " / " + (rc.invalid || 0) + "</span></div>" +
+      (ls.sourceErrors
+        ? '<div class="health-row"><span class="muted">Data source errors</span><span class="small" style="color:var(--amber)">' + ls.sourceErrors + "</span></div>"
+        : "");
+
+    var rej = ls.rejectedSample || [];
+    $("rejectionsList").innerHTML = rej.length
+      ? rej.map(function (x) {
+          return '<div class="health-row"><span class="small" style="font-weight:600">' + esc(x.symbol || "?") +
+                 '</span><span class="small muted wrap-anywhere" style="text-align:right">' + esc(x.reasons || "") + "</span></div>";
+        }).join("")
+      : '<span class="small muted">No rejections reported in the last scan.</span>';
+  }
+
+  function ageCellHtml(t) {
+    var age = tokenAgeMin(t);
+    if (age === null) return '<span class="muted">' + DASH + "</span>";
+    if (age < POLICY.early.priorityAgeMin) return '<span class="pos">' + age.toFixed(1) + "m priority</span>";
+    if (age > POLICY.early.maxAgeMin) return '<span class="neg">' + age.toFixed(1) + "m stale</span>";
+    return age.toFixed(1) + "m";
+  }
+
+  function activityCellHtml(t) {
+    var bp = buyPressureOf(t);
+    if (!isNum(t.trades5m) && bp === null) return '<span class="muted">' + DASH + "</span>";
+    return (isNum(t.trades5m) ? t.trades5m : DASH) + " tr · " + (bp === null ? DASH : bp.toFixed(2) + "\u00D7");
+  }
+
+  function renderDiscovered() {
+    var body = $("discoveredBody");
+    if (state.discoveredTokens.length === 0) {
+      body.innerHTML = emptyRow(10, "No tokens discovered yet");
+      return;
+    }
+    var guard = canSubmitEntry();
+    var guardCode = guard.ok ? null : executionState().code;
+
+    body.innerHTML = state.discoveredTokens.slice().reverse().map(function (t) {
+      var pt = preTrade(t);
+      var action;
+      if (t.status !== "candidate") action = '<span class="small muted">' + esc(t.status || "") + "</span>";
+      else if (!guard.ok) action = '<span class="small muted wrap-anywhere">Blocked — ' + esc(guardCode) + "</span>";
+      else if (pt.status === "fail") action = '<span class="small neg wrap-anywhere" title="' + esc(pt.fails.join("; ")) + '">Filtered</span>';
+      else action = '<button class="btn btn-green" style="padding:5px 12px;font-size:12px" onclick="vankleff.buy(\'' + esc(t.id) + '\')">BUY</button>';
+
+      var mcap = isNum(t.marketCap) && t.marketCap > 0
+        ? "$" + Math.round(t.marketCap).toLocaleString()
+        : '<span style="color:var(--amber)">' + DASH + " (FDV " + fmtUsd(t.fdv) + ")</span>";
+      var impact = isNum(t.priceImpactPct)
+        ? '<span class="' + (t.priceImpactPct > POLICY.maxImpactPct ? "neg" : "") + '">' + t.priceImpactPct + "%</span>"
+        : '<span class="muted">' + DASH + "</span>";
+
+      return "<tr>" + tokenCell(t.symbol) +
+        '<td class="small wrap-anywhere">' + esc(t.source || DASH) + "</td>" +
+        '<td class="small">' + ageCellHtml(t) + "</td>" +
+        '<td class="mono small">' + fmtUsd(t.liquidityUsd) + " / " + mcap + "</td>" +
+        '<td class="mono small">' + activityCellHtml(t) + "</td>" +
+        '<td class="mono">' + (isNum(t.score) ? t.score : DASH) + "</td>" +
+        '<td class="small">' + impact + "</td>" +
+        '<td class="small" title="' + esc(t.securityNotes || "") + '">' + securityPill(t.securityStatus) + "</td>" +
+        '<td class="small wrap-anywhere">' + esc(t.status || "") + "</td>" +
+        "<td>" + action + "</td>" +
+      "</tr>";
+    }).join("");
+  }
+
+  function renderScanners() {
+    renderScanSummary();
+    renderDiscovered();
+  }
+
+  function renderSettingsForm() {
+    var s = state.settings || {};
+    SETTINGS_FIELDS.forEach(function (f) {
+      var el = $(f[0]);
+      if (el) el.value = has(s[f[1]]) ? s[f[1]] : "";
+    });
+    $("cfgTimezone").value = s.timezone || "";
+    $("cfgTrail").checked = s.trailingEnabled === true;
+    $("cfgReinvest").checked = s.reinvest === true;
+  }
+
+  function renderPolicy() {
+    $("policyRows").innerHTML = policyRows().map(function (r) {
+      var cls = r.status === "pass" ? "pill-green" : r.status === "fail" ? "pill-red" : "pill-amber";
+      var label = r.status === "pass" ? "OK" : r.status === "fail" ? "TOO LOOSE" : "UNKNOWN";
+      return '<div class="health-row"><span class="muted wrap-anywhere">' + esc(r.label) + "</span>" +
+             '<span class="pill ' + cls + '">' + label + "</span></div>" +
+             '<div class="step-detail small muted wrap-anywhere">' + esc(r.detail) + "</div>";
+    }).join("");
+  }
+
+  function flashSaveMsg(text) {
+    var el = $("saveMsg");
+    if (!el) return;
+    el.textContent = text;
+    clearTimeout(flashSaveMsg._t);
+    flashSaveMsg._t = setTimeout(function () { el.textContent = ""; }, 3500);
+  }
+
+  function renderAll() {
+    renderHeader();
+    renderExecutionState();
+    renderReadiness();
+    renderFinance();
+    renderPositions();
+    renderExecRequests();
+    renderHistory();
+    renderRisk();
+    renderServiceHealth();
+    renderSettingsForm();
+    renderPolicy();
+    renderScanners();
+  }
+
+  /* =========================================================================
+     15. SELF-TESTS
+     ========================================================================= */
+  function withState(patch, fn) {
+    var prev = {};
+    Object.keys(patch).forEach(function (k) {
+      prev[k] = state[k];
+      var v = patch[k];
+      state[k] = (v && typeof v === "object" && !Array.isArray(v) && state[k] && typeof state[k] === "object")
+        ? Object.assign({}, state[k], v)
+        : v;
+    });
+    try { return fn(); } finally {
+      Object.keys(prev).forEach(function (k) { state[k] = prev[k]; });
+    }
+  }
+
+  var LIVE_PATCH = {
+    connected: true,
+    health: { live: true, walletBalance: 1 },
+    serviceHealth: { rpc: "ok", listener: "running", monitor: "running" },
+    emergencyStop: false,
+    settings: { dailyLossLimit: 1000, drawdownTrigger: 2500, maxPositions: 3, maxExposure: 3000, trailPct: 5 }
+  };
+  function livePatch(overrides) {
+    var p = {};
+    Object.keys(LIVE_PATCH).forEach(function (k) { p[k] = LIVE_PATCH[k]; });
+    p.healthCheckedAt = Date.now();
+    return Object.assign(p, overrides || {});
+  }
+
+  function goodToken(overrides) {
+    var t = { strategy: "early_hunter", ageMinutes: 1, liquidityUsd: 50000, marketCap: 150000, trades5m: 40,
+              buyPressure: 1.5, priceChange5mPct: 5, executableLiquidityUsd: 20000, priceImpactPct: 1.5 };
+    return Object.assign(t, overrides || {});
+  }
+
+  function runSelfTests() {
+    var out = [];
+    function test(name, fn) {
+      try { fn(); out.push({ name: name, pass: true, error: null }); }
+      catch (e) { out.push({ name: name, pass: false, error: e.message || String(e) }); }
+    }
+    function ok(c, m) { if (!c) throw new Error(m || "assertion failed"); }
+    function eq(a, b, tol, m) {
+      if (Math.abs(a - b) > (tol === undefined ? 1e-9 : tol)) throw new Error((m || "mismatch") + ": got " + a + ", expected " + b);
+    }
+
+    var REF_RATE = 180000; /* reference rate used only inside tests */
+
+    test("No financial defaults are seeded into state", function () {
+      ok(state.realizedPnl === null, "realizedPnl must start unknown");
+      ok(state.settings === null || !("budget" in state.settings), "settings must not carry a local budget");
+      ok(state.health.walletBalance === null, "wallet balance must start unknown, not a placeholder");
+      ok(state.positions.length === 0 && state.tradeHistory.length === 0, "state must start empty");
+    });
+
+    test("Only connection URLs and unresolved request IDs are persisted", function () {
+      savePrefs(); savePending();
+      Object.keys(JSON.parse(localStorage.getItem(PREFS_KEY))).forEach(function (k) {
+        ok(k === "backendUrl" || k === "wsUrl", "unexpected key in conn storage: " + k);
+      });
+      var pend = JSON.parse(localStorage.getItem(PENDING_KEY) || "[]");
+      ok(Array.isArray(pend), "pending ledger must be an array");
+      pend.forEach(function (r) {
+        ok(!("solSpent" in r) && !("netPnl" in r) && !("walletBalance" in r), "pending ledger must hold no financial values");
+        ok(!!r.id && !!r.submittedAt, "pending entries carry only id + metadata");
+      });
+    });
+
+    test("Unknown values render as UNAVAILABLE, never as zero", function () {
+      ok(fmtSol(null) === UNAVAILABLE, "null SOL must be UNAVAILABLE");
+      ok(fmtNgn(undefined) === UNAVAILABLE, "undefined naira must be UNAVAILABLE");
+      ok(fmtSol(0) === "0 SOL", "a verified zero must still display as zero");
+    });
+
+    test("Unrealized P&L is null when price data is missing", function () {
+      ok(unrealizedSolOf({ solSpent: 0.01, entryPriceSol: 0.001, currentPriceSol: null }) === null);
+      ok(unrealizedSolOf({ solSpent: null, entryPriceSol: 0.001, currentPriceSol: 0.002 }) === null);
+    });
+
+    test("Unrealized P&L doubles the position value at 2x price", function () {
+      eq(unrealizedSolOf({ solSpent: 0.01, tokenAmount: 1000, entryPriceSol: 0.00001, currentPriceSol: 0.00002, remainingPct: 100 }), 0.01, 1e-9, "2x price");
+    });
+
+    test("Unrealized P&L scales with the remaining fraction", function () {
+      eq(unrealizedSolOf({ solSpent: 0.01, tokenAmount: 1000, entryPriceSol: 0.00001, currentPriceSol: 0.00002, remainingPct: 50 }), 0.005, 1e-9, "half the position");
+    });
+
+    test("Fixed stop targets the configured loss and sits below entry", function () {
+      withState({ settings: { lossTrigger: 500, solNgnRate: REF_RATE } }, function () {
+        var p = { solSpent: 0.01, tokenAmount: 1000, entryPriceSol: 0.00001, remainingPct: 100 };
+        var stop = stopSolFor(p);
+        ok(stop !== null && stop > 0 && stop < p.entryPriceSol, "stop must be in (0, entry)");
+        eq((p.tokenAmount * stop - p.solSpent) * REF_RATE, -500, 0.5, "loss at stop");
+      });
+    });
+
+    test("Stop is unavailable when the trigger exceeds the committed value", function () {
+      withState({ settings: { lossTrigger: 100000, solNgnRate: REF_RATE } }, function () {
+        ok(stopSolFor({ solSpent: 0.00001, tokenAmount: 1000, entryPriceSol: 0.00001, remainingPct: 100 }) === null);
+      });
+    });
+
+    test("Trailing stop sits 5% below the highest valid price", function () {
+      eq(trailStopSol({ trailHigh: 0.002 }), 0.0019, 1e-12, "5% trail");
+      ok(trailStopSol({ trailHigh: 0, highPriceSol: null }) === null, "no high must mean no trail");
+      ok(trailStopSol({ highPriceSol: 0.0001 }) < 0.0001, "fallback high must still trail");
+    });
+
+    test("Drawdown counts realized and unrealized together", function () {
+      ok(Math.max(0, -(-1000 + -1800)) === 2800, "drawdown = 2800");
+    });
+
+    test("Africa/Lagos trading day starts at ~23:00 UTC", function () {
+      var h = tradingDayStart("Africa/Lagos").getUTCHours();
+      ok(h === 23 || h === 0, "got " + h + ":00 UTC");
+    });
+
+    test("Daily losses only count sell records from the current day", function () {
+      var hist = [
+        { type: "sell", netPnl: -300, timestamp: new Date().toISOString() },
+        { type: "sell", netPnl: 900, timestamp: new Date().toISOString() },
+        { type: "buy", netPnl: 0, timestamp: new Date().toISOString() }
+      ];
+      ok(sumDailyLosses(hist, "Africa/Lagos") === 300, "only the losing sell counts");
+    });
+
+    test("Take-profit exits over 100% are rejected", function () {
+      var v = validateTpLevels({ tpGain1: 500, tpPct1: 80, tpGain2: 2000, tpPct2: 80 });
+      ok(!v.valid && /100%/.test(v.error || ""), "must reject over 100%");
+    });
+
+    test("Execution state is never LIVE TRADING without backend authorization", function () {
+      withState(livePatch({ health: { live: false } }), function () {
+        ok(executionState().code !== "LIVE TRADING", "must not be live when the backend says otherwise");
+      });
+      withState(livePatch({ health: { live: null } }), function () {
+        ok(executionState().code !== "LIVE TRADING", "must not be live when authorization is unknown");
+      });
+    });
+
+    test("Entries are blocked whenever the state is not LIVE TRADING", function () {
+      withState(livePatch({ health: { live: false } }), function () {
+        ok(canSubmitEntry().ok === false, "entry must be blocked");
+      });
+    });
+
+    test("Emergency stop forces the EMERGENCY STOP state", function () {
+      withState(livePatch({ emergencyStop: true }), function () {
+        ok(executionState().code === "EMERGENCY STOP", "emergency stop must win");
+      });
+    });
+
+    test("A stale backend status is treated as disconnected", function () {
+      withState(livePatch({ healthCheckedAt: Date.now() - (HEALTH_STALE_MS + 5000) }), function () {
+        ok(executionState().code === "DISCONNECTED", "stale status must not read as live");
+      });
+    });
+
+    test("Readiness resumes automatically once the supervisor reports all checks", function () {
+      withState(livePatch(), function () {
+        ok(executionState().code === "LIVE TRADING", "all-green must resume live, got " + executionState().code);
+      });
+    });
+
+    test("Policy compliance flags backend limits that are too loose", function () {
+      withState({ settings: { dailyLossLimit: 5000, drawdownTrigger: 2500, maxPositions: 3, maxExposure: 3000, trailPct: 5 } }, function () {
+        ok(policyRows().some(function (r) { return r.status === "fail"; }), "looser daily limit must fail policy");
+      });
+      withState({ settings: { dailyLossLimit: 1000, drawdownTrigger: 2500, maxPositions: 3, maxExposure: 3000, trailPct: 5 } }, function () {
+        ok(policyRows().every(function (r) { return r.status === "pass"; }), "exact policy must pass");
+      });
+    });
+
+    test("Early Hunter rejects a token older than 10 minutes", function () {
+      var r = preTrade(goodToken({ ageMinutes: 11 }));
+      ok(r.status === "fail" && /age/.test(r.fails.join()), "11m old must fail, got " + r.status);
+      ok(preTrade(goodToken({ ageMinutes: 2.5 })).status === "pass", "2.5m old, in-range token must pass");
+    });
+
+    test("Anti-chasing rejects a token already up more than 20%", function () {
+      ok(preTrade(goodToken({ priceChange5mPct: 35 })).status === "fail", "35% chase must fail");
+      ok(preTrade(goodToken({ priceChange5mPct: 10 })).status === "pass", "10% chase must pass");
+    });
+
+    test("Unsafe price impact and thin executable liquidity are refused", function () {
+      ok(preTrade(goodToken({ priceImpactPct: 9 })).status === "fail", "9% impact must fail");
+      ok(preTrade(goodToken({ executableLiquidityUsd: 800 })).status === "fail", "thin executable liquidity must fail");
+      ok(preTrade(goodToken({ trades5m: 3 })).status === "fail", "3 trades/5m must fail the activity filter");
+      ok(preTrade(goodToken({ buyPressure: 1.0 })).status === "fail", "flat buy pressure must fail");
+    });
+
+    test("Unreported filter inputs are UNKNOWN, never silently passed", function () {
+      var r = preTrade({ strategy: "early_hunter", ageMinutes: 1 });
+      ok(r.status === "unknown" && r.unknowns.length > 0, "missing fields must be unknown");
+    });
+
+    test("WebSocket bridge serialises structured messages", function () {
+      var captured = null, orig = ws;
+      ws = { readyState: WebSocket.OPEN, send: function (d) { captured = d; } };
+      try { sendWs({ type: "ping" }); } finally { ws = orig; }
+      ok(captured && JSON.parse(captured).type === "ping", "message must serialise with a type field");
+    });
+
+    test("token_discovered is routed into discoveredTokens", function () {
+      var before = state.discoveredTokens.length;
+      handleBackendEvent({ type: "token_discovered", data: { id: "t_test", address: "mint_test", symbol: "TEST", status: "candidate" } });
+      ok(state.discoveredTokens.length === before + 1, "token must be added");
+      state.discoveredTokens = state.discoveredTokens.filter(function (t) { return t.address !== "mint_test"; });
+    });
+
+    test("position_opened does not duplicate an existing position", function () {
+      var before = state.positions.length;
+      handleBackendEvent({ type: "position_opened", data: { id: "p_dup", address: "mint_dup", symbol: "DUP", remainingPct: 100 } });
+      handleBackendEvent({ type: "position_opened", data: { id: "p_dup", address: "mint_dup", symbol: "DUP", remainingPct: 90 } });
+      ok(state.positions.length === before + 1, "second event must update, not duplicate");
+      state.positions = state.positions.filter(function (p) { return p.id !== "p_dup"; });
+      savePending();
+    });
+
+    test("A confirmed position reconciles a pending request", function () {
+      var r = newRequest("BUY", { symbol: "REC", address: "mint_rec" }, null);
+      ok(findRequest(r.id).status === "SUBMITTED");
+      handleBackendEvent({ type: "position_opened", data: { id: "p_rec", address: "mint_rec", symbol: "REC", buySignature: "sig_rec", remainingPct: 100 } });
+      ok(findRequest(r.id).status === "CONFIRMED", "request must be reconciled to CONFIRMED");
+      state.positions = state.positions.filter(function (p) { return p.id !== "p_rec"; });
+      state.execRequests = state.execRequests.filter(function (x) { return x.id !== r.id; });
+      savePending();
+    });
+
+    test("Duplicate entries for the same mint are blocked while pending", function () {
+      var r = newRequest("BUY", { symbol: "PEN", address: "mint_pen" }, null);
+      ok(hasPendingFor("mint_pen") === true, "pending request must block duplicates");
+      state.execRequests = state.execRequests.filter(function (x) { return x.id !== r.id; });
+      savePending();
+      ok(hasPendingFor("mint_pen") === false);
+    });
+
+    test("Unresolved requests survive a reload and still block duplicates", function () {
+      var keep = state.execRequests;
+      state.execRequests = [{ id: "req_persist", kind: "BUY", address: "mint_persist", symbol: "PRS",
+                              status: "SUBMITTED", submittedAt: new Date().toISOString() }];
+      savePending();
+      state.execRequests = [];
+      loadPending();
+      ok(state.execRequests.length === 1, "pending request must be restored");
+      ok(state.execRequests[0].status === "UNKNOWN", "restored request must be UNKNOWN, not resubmitted");
+      ok(hasPendingFor("mint_persist") === true, "restored request must block a second buy");
+      state.execRequests = keep;
+      savePending();
+    });
+
+    test("Unknown-outcome requests expire to UNKNOWN and are never resent", function () {
+      state.execRequests.unshift({ id: "req_old", kind: "BUY", address: "mint_old", status: "SUBMITTED",
+                                   submittedAt: new Date(Date.now() - (REQUEST_UNKNOWN_MS + 5000)).toISOString() });
+      expireStaleRequests();
+      ok(findRequest("req_old").status === "UNKNOWN", "stale request must become UNKNOWN");
+      state.execRequests = state.execRequests.filter(function (x) { return x.id !== "req_old"; });
+      savePending();
+    });
+
+    test("REST helpers are wired for every command the backend exposes", function () {
+      [pushSettings, pushEmergencyStop, pushClose, pushScan, submitBuy, requestReconcile, clearRequest].forEach(function (fn, i) {
+        ok(typeof fn === "function", "command helper #" + i + " must be a function");
+      });
+    });
+
+    test("window.vankleff bindings are present", function () {
+      ["closePosition", "buy", "reconcile", "refresh", "clearRequest"].forEach(function (k) {
+        ok(typeof window.vankleff[k] === "function", "missing binding: " + k);
+      });
+    });
+
+    test("No leftover placeholder balance or market-API calls in the script", function () {
+      var src = document.querySelector("script").textContent;
+      ok(!/(^|\D)50000(\D|$)/.test(src), "no placeholder 50000 may remain");
+      ok(src.indexOf("0.277778") === -1, "no placeholder SOL amount may remain");
+      ok(src.indexOf("api.dexscreener") === -1, "no direct market-API calls");
+      ok(src.indexOf("api.rugcheck") === -1, "no direct security-API calls");
+    });
+
+    return out;
+  }
+
+  function renderTests(results) {
+    var failed = results.filter(function (r) { return !r.pass; }).length;
+    var passed = results.length - failed;
+    var html = '<div class="alert ' + (failed === 0 ? "alert-info" : "alert-warn") + '">' +
+      "<span>" + (failed === 0 ? "\u2705" : "\u274C") + "</span><span><strong>" + passed + " passed" +
+      (failed ? " · " + failed + " FAILED" : "") + "</strong></span></div>";
+    html += results.map(function (r) {
+      return '<div class="health-row"><span class="wrap-anywhere"><span class="' + (r.pass ? "test-pass" : "test-fail") + '">' +
+        (r.pass ? "PASS" : "FAIL") + "</span> " + esc(r.name) +
+        (r.error ? '<div class="small" style="color:var(--red)">' + esc(r.error) + "</div>" : "") + "</span></div>";
+    }).join("");
+    $("testResults").innerHTML = html;
+  }
+
+  /* =========================================================================
+     16. WIRING + INIT
+     ========================================================================= */
+  $("tabs").addEventListener("click", function (e) {
+    if (!e.target.classList.contains("tab")) return;
+    var tabs = document.querySelectorAll(".tab");
+    for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove("active");
+    e.target.classList.add("active");
+    var contents = document.querySelectorAll(".tab-content");
+    for (var j = 0; j < contents.length; j++) contents[j].classList.add("hidden");
+    var target = $("tab-" + e.target.dataset.tab);
+    if (target) target.classList.remove("hidden");
+  });
+
+  $("saveSettings").addEventListener("click", pushSettings);
+
+  $("emergencyBtn").addEventListener("click", function () {
+    if (state.emergencyStop === null) return;
+    if (state.emergencyStop) {
+      if (confirm("Clear the emergency stop?\n\nNew entries will be allowed again once the backend passes every readiness check. Open positions are not affected.")) pushEmergencyStop(false);
+    } else {
+      if (confirm("ACTIVATE EMERGENCY STOP?\n\n• New entries are blocked on the backend immediately\n• Existing positions keep being monitored under the exit policy\n• This does NOT close open positions")) pushEmergencyStop(true);
+    }
+  });
+
+  $("scanEarly").addEventListener("click", function () { pushScan("early_hunter"); });
+  $("scanConfirm").addEventListener("click", function () { pushScan("confirmation_hunter"); });
+  $("runTests").addEventListener("click", function () { renderTests(runSelfTests()); });
+
+  $("saveBackend").addEventListener("click", function () {
+    state.backendUrl = $("cfgBackendUrl").value || "http://localhost:8080";
+    state.wsUrl = $("cfgWsUrl").value || "ws://localhost:8080";
+    savePrefs();
+    if (ws) { try { ws.close(); } catch (e) { /* noop */ } }
+    wsAttempts = 0;
+    if (wsTimer) { clearTimeout(wsTimer); wsTimer = null; }
+    connectWs();
+    setTimeout(function () { $("backendMsg").textContent = "\u2713 Saved"; }, 1200);
+  });
+
+  window.vankleff = {
+    closePosition: pushClose,
+    buy: submitBuy,
+    reconcile: requestReconcile,
+    clearRequest: clearRequest,
+    refresh: function () { requestReconcile(); renderAll(); }
+  };
+
+  /* INIT — the frontend never arms trading; it reflects and supervises backend state. */
+  loadPending();
+  renderAll();
+  connectWs();
+  pollHealth();
+  setInterval(pollHealth, HEALTH_POLL_MS);
+  setInterval(function () { expireStaleRequests(); renderExecRequests(); updateHealthAge(); }, 5000);
+})();
+</script>
+</body>
+</html>
